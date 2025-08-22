@@ -1,0 +1,13 @@
+{
+  "name": "lua-script-server",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "mongodb": "^4.8.1",
+    "jsonwebtoken": "^8.5.1",
+    "luamin": "^1.0.4"
+  }
+}
