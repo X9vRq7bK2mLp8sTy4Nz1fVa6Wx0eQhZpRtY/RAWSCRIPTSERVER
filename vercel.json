@@ -5,7 +5,11 @@
       "dest": "/api/$1"
     },
     {
-      "src": "/panel",
+      "src": "/public/(.*)",
+      "dest": "/public/$1"
+    },
+    {
+      "src": "/admin",
       "dest": "/public/admin.html"
     },
     {
