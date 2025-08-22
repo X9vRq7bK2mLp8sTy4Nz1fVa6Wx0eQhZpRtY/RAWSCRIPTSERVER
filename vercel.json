@@ -1,24 +1,38 @@
 {
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { 
-      "src": "/admin", 
-      "dest": "/public/admin.html",
-      "headers": {
-        "Content-Type": "text/html"
-      }
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/admin",
+      "dest": "/public/admin.html"
     },
     {
       "src": "/(.*)",
-      "dest": "/api/content.js",
-      "headers": {
-        "Content-Type": "text/plain"
-      }
+      "dest": "/api/content.js"
     }
   ],
-  "functions": {
-    "api/auth.js": { "includeFiles": "**/*.json" },
-    "api/update.js": { "includeFiles": "**/*.json" },
-    "api/content.js": { "includeFiles": "**/*.json" }
-  }
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "X-Requested-With, Content-Type, Authorization" }
+      ]
+    },
+    {
+      "source": "/admin",
+      "headers": [
+        { "key": "Content-Type", "value": "text/html; charset=utf-8" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Content-Type", "value": "text/plain; charset=utf-8" }
+      ]
+    }
+  ]
 }
