@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head><title>admin editor</title></head>
+<body>
+  <form id="editor">
+    <input type="text" name="user" placeholder="username"><br>
+    <input type="password" name="pass" placeholder="password"><br>
+    <textarea name="text" rows="10" cols="50"></textarea><br>
+    <button type="submit">update</button>
+  </form>
+
+  <script>
+    document.getElementById("editor").onsubmit = async (e) => {
+      e.preventDefault();
+      const user = e.target.user.value;
+      const pass = e.target.pass.value;
+      const text = e.target.text.value;
+
+      const res = await fetch("/api/update?user="+user+"&pass="+pass, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+      });
+
+      alert(await res.text());
+    };
+  </script>
+</body>
+</html>
