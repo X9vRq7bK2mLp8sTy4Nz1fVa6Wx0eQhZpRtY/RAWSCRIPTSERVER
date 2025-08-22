@@ -6,16 +6,40 @@
     },
     {
       "src": "/admin",
-      "dest": "/public/admin.html",
+      "dest": "/public/admin.html"
+    },
+    {
+      "src": "/raw",
+      "dest": "/api/content.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/content.js"
+    }
+  ],
+  "headers": [
+    {
+      "src": "/api/(.*)",
       "headers": {
-        "Content-Type": "text/html"
+        "Content-Type": "application/json"
+      }
+    },
+    {
+      "src": "/admin",
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      }
+    },
+    {
+      "src": "/raw",
+      "headers": {
+        "Content-Type": "text/plain; charset=utf-8"
       }
     },
     {
       "src": "/(.*)",
-      "dest": "/api/content.js",
       "headers": {
-        "Content-Type": "text/plain"
+        "Content-Type": "text/plain; charset=utf-8"
       }
     }
   ]
