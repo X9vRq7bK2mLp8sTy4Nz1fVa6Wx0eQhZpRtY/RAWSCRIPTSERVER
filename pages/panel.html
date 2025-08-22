@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>admin panel</title>
+</head>
+<body>
+  <h2>update script</h2>
+  <form id="editor">
+    <input type="text" name="user" placeholder="username"><br><br>
+    <input type="password" name="pass" placeholder="password"><br><br>
+    <textarea name="text" rows="12" cols="60" placeholder="enter lua code here"></textarea><br><br>
+    <button type="submit">update</button>
+  </form>
+
+  <script>
+    document.getElementById("editor").onsubmit = async (e) => {
+      e.preventDefault();
+      const user = e.target.user.value;
+      const pass = e.target.pass.value;
+      const text = e.target.text.value;
+
+      const res = await fetch(`/api/update?user=${user}&pass=${pass}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+      });
+
+      alert(await res.text());
+    };
+  </script>
+</body>
+</html>
