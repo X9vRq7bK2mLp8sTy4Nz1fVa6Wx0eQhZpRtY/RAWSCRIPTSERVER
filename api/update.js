@@ -1,10 +1,17 @@
-// api/update.js - Handle content updates
-// For simplicity, we'll use a global variable - in production, use a database
+// For simplicity, we'll use a global variable
 let content = `-- Sample Roblox script
 print("Hello from secure text host!")
+
 game.Players.PlayerAdded:Connect(function(player)
     print(player.Name .. " joined the game")
-end)`;
+    
+    -- Example: Give new player a tool
+    local tool = Instance.new("Tool")
+    tool.Name = "ExampleTool"
+    tool.Parent = player.Backpack
+end)
+
+return "Script loaded successfully!"`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
