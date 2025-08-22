@@ -5,7 +5,7 @@
       "dest": "/api/$1"
     },
     {
-      "src": "/admin",
+      "src": "/panel",
       "dest": "/public/admin.html"
     },
     {
@@ -15,32 +15,6 @@
     {
       "src": "/(.*)",
       "dest": "/api/content.js"
-    }
-  ],
-  "headers": [
-    {
-      "src": "/api/(.*)",
-      "headers": {
-        "Content-Type": "application/json"
-      }
-    },
-    {
-      "src": "/admin",
-      "headers": {
-        "Content-Type": "text/html; charset=utf-8"
-      }
-    },
-    {
-      "src": "/raw",
-      "headers": {
-        "Content-Type": "text/plain; charset=utf-8"
-      }
-    },
-    {
-      "src": "/(.*)",
-      "headers": {
-        "Content-Type": "text/plain; charset=utf-8"
-      }
     }
   ]
 }
