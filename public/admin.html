@@ -22,9 +22,13 @@
   </div>
   <script>
     async function loadScript() {
-      const response = await fetch('/api/script', { headers: { 'Authorization': localStorage.getItem('token') } });
-      if (response.ok) {
-        const data = await response.json();
+      const auth = localStorage.getItem('auth');
+      if (!auth) window.location.href = '/login.html';
+      const res = await fetch('/api/script.lua', {
+        headers: { 'Authorization': `Basic ${auth}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
         document.getElementById('script').value = data.content;
         document.getElementById('obfuscate').checked = data.obfuscate;
       } else {
@@ -33,14 +37,15 @@
     }
 
     async function saveScript() {
+      const auth = localStorage.getItem('auth');
       const content = document.getElementById('script').value;
       const obfuscate = document.getElementById('obfuscate').checked;
-      const response = await fetch('/api/script', {
+      const res = await fetch('/api/script.lua', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Basic ${auth}` },
         body: JSON.stringify({ content, obfuscate })
       });
-      document.getElementById('status').textContent = response.ok ? 'Script saved!' : 'Error saving script';
+      document.getElementById('status').textContent = res.ok ? 'Script saved!' : 'Error saving script';
     }
 
     loadScript();
