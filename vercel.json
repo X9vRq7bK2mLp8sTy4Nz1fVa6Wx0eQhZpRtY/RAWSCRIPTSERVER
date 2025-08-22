@@ -1,0 +1,24 @@
+{
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { 
+      "src": "/admin", 
+      "dest": "/public/admin.html",
+      "headers": {
+        "Content-Type": "text/html"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/content.js",
+      "headers": {
+        "Content-Type": "text/plain"
+      }
+    }
+  ],
+  "functions": {
+    "api/auth.js": { "includeFiles": "**/*.json" },
+    "api/update.js": { "includeFiles": "**/*.json" },
+    "api/content.js": { "includeFiles": "**/*.json" }
+  }
+}
