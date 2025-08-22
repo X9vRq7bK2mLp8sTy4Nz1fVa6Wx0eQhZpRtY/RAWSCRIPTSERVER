@@ -9,17 +9,20 @@ export default function handler(req, res) {
   const secretKey = req.query.key;
   const expectedKey = process.env.SECRET_KEY;
   const authHeader = req.headers.authorization;
-  const adminUsername = process.env.ADMIN_USERNAME;
-  const adminPassword = process.env.ADMIN_PASSWORD;
+  const expectedAuth = `Basic ${btoa(`${process.env.ADMIN_USERNAME}:${process.env.ADMIN_PASSWORD}`)}`;
 
-  if (req.method === 'POST' && authHeader === `Basic ${btoa(``\({adminUsername}:\)`{adminPassword}`)}`) {
+  if (req.method === 'POST' && authHeader === expectedAuth) {
     scriptContent = req.body.content || scriptContent;
     obfuscate = req.body.obfuscate === 'true' || req.body.obfuscate === true;
     return res.status(200).json({ message: 'Script updated' });
   }
 
-  if (req.method === 'GET' && authHeader === `Basic ${btoa(``\({adminUsername}:\)`{adminPassword}`)}`) {
+  if (req.method === 'GET' && authHeader === expectedAuth) {
     return res.status(200).json({ content: scriptContent, obfuscate });
+  }
+
+  if (authHeader && authHeader !== expectedAuth) {
+    return res.status(401).send('Invalid admin credentials');
   }
 
   if (secretKey !== expectedKey) {
