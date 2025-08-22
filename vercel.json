@@ -10,7 +10,7 @@
     },
     {
       "src": "/admin",
-      "dest": "/public/admin.html"
+      "dest": "/api/admin.js"
     },
     {
       "src": "/raw",
@@ -19,20 +19,6 @@
     {
       "src": "/(.*)",
       "dest": "/api/content.js"
-    }
-  ],
-  "headers": [
-    {
-      "src": "/public/.*",
-      "headers": {
-        "Content-Type": "text/html"
-      }
-    },
-    {
-      "src": "/admin",
-      "headers": {
-        "Content-Type": "text/html"
-      }
     }
   ]
 }
