@@ -1,31 +1,32 @@
-const { MongoClient } = require('mongodb');
-const luamin = require('luamin');
+let scriptContent = `print("Hello from the Lua script!")\nlocal player = game.Players.LocalPlayer\nif player then\n  print("Player name: " .. player.Name)\nend`;
+let obfuscate = false;
 
-export default async function handler(req, res) {
+function simpleObfuscate(code) {
+  return code.replace(/--.*$/gm, '').replace(/\s+/g, ' ').trim();
+}
+
+export default function handler(req, res) {
   const secretKey = req.query.key;
-  const expectedKey = process.env.SECRET_KEY; // 250-character secret key
+  const expectedKey = process.env.SECRET_KEY;
+  const authHeader = req.headers.authorization;
+  const adminUsername = process.env.ADMIN_USERNAME;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (req.method === 'POST' && authHeader === `Basic ${btoa(``\({adminUsername}:\)`{adminPassword}`)}`) {
+    scriptContent = req.body.content || scriptContent;
+    obfuscate = req.body.obfuscate === 'true' || req.body.obfuscate === true;
+    return res.status(200).json({ message: 'Script updated' });
+  }
+
+  if (req.method === 'GET' && authHeader === `Basic ${btoa(``\({adminUsername}:\)`{adminPassword}`)}`) {
+    return res.status(200).json({ content: scriptContent, obfuscate });
+  }
 
   if (secretKey !== expectedKey) {
     return res.status(403).send('access denied');
   }
 
-  const client = new MongoClient(process.env.MONGODB_URI);
-  try {
-    await client.connect();
-    const db = client.db('lua_app');
-    const collection = db.collection('scripts');
-    const scriptDoc = await collection.findOne({ name: 'main_script' });
-
-    if (!scriptDoc) {
-      return res.status(404).send('Script not found');
-    }
-
-    const script = scriptDoc.obfuscate ? luamin.minify(scriptDoc.content) : scriptDoc.content;
-    res.setHeader('Content-Type', 'text/plain');
-    return res.status(200).send(script);
-  } catch (error) {
-    return res.status(500).send('Server error');
-  } finally {
-    await client.close();
-  }
+  const output = obfuscate ? simpleObfuscate(scriptContent) : scriptContent;
+  res.setHeader('Content-Type', 'text/plain');
+  return res.status(200).send(output);
 }
