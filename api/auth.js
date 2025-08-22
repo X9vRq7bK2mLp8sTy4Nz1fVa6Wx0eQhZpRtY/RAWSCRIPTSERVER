@@ -1,23 +1,19 @@
-let scriptText = `print("hello world")`;
-
-export default function handler(req, res) {
-  const ip = req.headers["x-forwarded-for"]?.split(",")[0];
-  const allowedIp = "your.real.ip.address"; // hardcode your device ip here
-  const user = req.query.user;
-  const pass = req.query.pass;
-  const newText = req.body?.text;
-
-  if (ip !== allowedIp || user !== "yourusername" || pass !== "yourpassword") {
-    res.status(403).send("forbidden");
-    return;
+// api/auth.js - Handle admin authentication
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  if (!newText) {
-    res.status(400).send("no text provided");
-    return;
+  try {
+    const { username, password } = req.body;
+    
+    // Simple authentication - in production, use secure hashing
+    if (username === 'admin' && password === 'securepassword') {
+      return res.status(200).json({ success: true, token: 'admin-token' });
+    } else {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
   }
-
-  scriptText = newText; // updates the live script
-
-  res.send("script updated");
 }
