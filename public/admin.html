@@ -19,36 +19,61 @@
     <label><input type="checkbox" id="obfuscate"> Obfuscate Script</label>
     <button onclick="saveScript()">Save Script</button>
     <p id="status"></p>
+    <p id="error" style="color: red;"></p>
   </div>
   <script>
     async function loadScript() {
       const auth = localStorage.getItem('auth');
-      if (!auth) window.location.href = '/login.html';
-      const res = await fetch('/api/script.lua', {
-        headers: { 'Authorization': `Basic ${auth}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        document.getElementById('script').value = data.content;
-        document.getElementById('obfuscate').checked = data.obfuscate;
-      } else {
-        window.location.href = '/login.html';
+      if (!auth) {
+        document.getElementById('error').textContent = 'No auth token found';
+        setTimeout(() => window.location.href = '/login.html', 1000);
+        return;
+      }
+      try {
+        const res = await fetch('/api/script.lua', {
+          headers: { 'Authorization': `Basic ${auth}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('script').value = data.content;
+          document.getElementById('obfuscate').checked = data.obfuscate;
+          document.getElementById('status').textContent = 'Script loaded';
+        } else {
+          document.getElementById('error').textContent = `Error: ${res.status} ${await res.text()}`;
+          setTimeout(() => window.location.href = '/login.html', 2000);
+        }
+      } catch (err) {
+        document.getElementById('error').textContent = `Fetch error: ${err.message}`;
+        setTimeout(() => window.location.href = '/login.html', 2000);
       }
     }
 
     async function saveScript() {
       const auth = localStorage.getItem('auth');
+      if (!auth) {
+        document.getElementById('error').textContent = 'No auth token found';
+        setTimeout(() => window.location.href = '/login.html', 1000);
+        return;
+      }
       const content = document.getElementById('script').value;
       const obfuscate = document.getElementById('obfuscate').checked;
-      const res = await fetch('/api/script.lua', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Basic ${auth}` },
-        body: JSON.stringify({ content, obfuscate })
-      });
-      document.getElementById('status').textContent = res.ok ? 'Script saved!' : 'Error saving script';
+      try {
+        const res = await fetch('/api/script.lua', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json', 
+            'Authorization': `Basic ${auth}` 
+          },
+          body: JSON.stringify({ content, obfuscate })
+        });
+        document.getElementById('status').textContent = res.ok ? 'Script saved!' : `Error: ${res.status} ${await res.text()}`;
+      } catch (err) {
+        document.getElementById('status').textContent = `Save error: ${err.message}`;
+      }
     }
 
-    loadScript();
+    // Run loadScript after a slight delay to ensure localStorage is ready
+    setTimeout(loadScript, 100);
   </script>
 </body>
 </html>
