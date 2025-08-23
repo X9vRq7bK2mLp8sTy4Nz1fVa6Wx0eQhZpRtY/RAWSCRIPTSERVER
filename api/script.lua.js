@@ -9,7 +9,10 @@ export default function handler(req, res) {
   const secretKey = req.query.key;
   const expectedKey = process.env.SECRET_KEY;
   const authHeader = req.headers.authorization;
-  const expectedAuth = `Basic ${btoa(`${process.env.ADMIN_USERNAME}:${process.env.ADMIN_PASSWORD}`)}`;
+  const expectedAuth = `Basic ${btoa(``\({process.env.ADMIN_USERNAME}:\)`{process.env.ADMIN_PASSWORD}`)}`;
+
+  console.log('Request headers:', req.headers); // Log headers for debugging
+  console.log('Secret key:', secretKey, 'Expected key:', expectedKey);
 
   if (req.method === 'POST' && authHeader === expectedAuth) {
     scriptContent = req.body.content || scriptContent;
@@ -22,10 +25,12 @@ export default function handler(req, res) {
   }
 
   if (authHeader && authHeader !== expectedAuth) {
+    console.log('Invalid auth header detected:', authHeader);
     return res.status(401).send('Invalid admin credentials');
   }
 
   if (secretKey !== expectedKey) {
+    console.log('Invalid secret key:', secretKey);
     return res.status(403).send('access denied');
   }
 
