@@ -62,21 +62,25 @@ export default async function handler(req, res) {
   const expectedAuth = `Basic ${btoa(`${process.env.ADMIN_USERNAME}:${process.env.ADMIN_PASSWORD}`)}`;
 
   try {
+    // Admin POST to save script
     if (req.method === 'POST' && authHeader === expectedAuth) {
       const { content, obfuscate: newObfuscate } = req.body;
       await updateScriptInDB(content || '', newObfuscate === true || newObfuscate === 'true');
       return res.status(200).json({ message: 'Script updated' });
     }
 
+    // Admin GET to load script for admin panel
     if (req.method === 'GET' && authHeader === expectedAuth) {
       const { content, obfuscate } = await getScriptFromDB();
       return res.status(200).json({ content, obfuscate });
     }
 
+    // Invalid admin credentials
     if (authHeader && authHeader !== expectedAuth) {
       return res.status(401).send('Invalid admin credentials');
     }
 
+    // Public GET with key check
     if (secretKey !== expectedKey) {
       return res.status(403).send('access denied');
     }
