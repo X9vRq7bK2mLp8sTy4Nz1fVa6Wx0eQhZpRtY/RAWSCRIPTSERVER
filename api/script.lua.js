@@ -62,6 +62,10 @@ async function getAllScripts() {
 async function saveScript(key, title, content, obfuscate) {
   try {
     const collection = await connectToDB();
+    if (!content.trim()) {
+      console.error('Script content cannot be empty');
+      throw new Error('Script content cannot be empty');
+    }
     await collection.updateOne(
       { _id: key },
       { $set: { title, content, obfuscate } },
@@ -95,14 +99,22 @@ function simpleObfuscate(code) {
 export default async function handler(req, res) {
   const authHeader = req.headers.authorization;
   const expectedAuth = `Basic ${Buffer.from(`${process.env.ADMIN_USERNAME}:${process.env.ADMIN_PASSWORD}`).toString('base64')}`;
-  const scriptId = req.params?.scriptid;
+  const scriptId = req.params?.scriptid || req.query?.scriptid; // Check both params and query
+
+  console.log(`Received request: ${req.method} /api/script.lua/${scriptId || ''}`);
 
   try {
     if (req.method === 'GET' && scriptId) {
       console.log(`Handling GET /api/script.lua/${scriptId}`);
       const { content, obfuscate } = await getScriptByKey(scriptId);
+      if (!content) {
+        console.warn(`No content for script: ${scriptId}`);
+        res.setHeader('Content-Type', 'text/plain');
+        return res.status(404).send('No script content found');
+      }
       const output = obfuscate ? simpleObfuscate(content) : content;
       res.setHeader('Content-Type', 'text/plain');
+      res.setHeader('Access-Control-Allow-Origin', '*'); // Allow access from any app
       console.log(`Served raw script: ${scriptId} (obfuscated: ${obfuscate})`);
       return res.status(200).send(output);
     }
