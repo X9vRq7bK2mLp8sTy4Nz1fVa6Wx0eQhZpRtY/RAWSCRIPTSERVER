@@ -93,15 +93,22 @@ function simpleObfuscate(code) {
 }
 
 export default async function handler(req, res) {
-  const secretKey = req.query.key;
-  const expectedKey = process.env.SECRET_KEY;
   const authHeader = req.headers.authorization;
   const expectedAuth = `Basic ${Buffer.from(`${process.env.ADMIN_USERNAME}:${process.env.ADMIN_PASSWORD}`).toString('base64')}`;
-  const isRootPath = req.url === '/' || req.url.startsWith('/?');
+  const scriptId = req.params?.scriptid; // From /api/script.lua/:scriptid
 
   try {
+    // Public: Get raw script by scriptid (no auth required)
+    if (req.method === 'GET' && scriptId) {
+      const { content, obfuscate } = await getScriptByKey(scriptId);
+      const output = obfuscate ? simpleObfuscate(content) : content;
+      res.setHeader('Content-Type', 'text/plain');
+      console.log(`Served raw script: ${scriptId} (obfuscated: ${obfuscate})`);
+      return res.status(200).send(output);
+    }
+
     // Admin: Get all scripts
-    if (req.method === 'GET' && !req.headers['header-1'] && authHeader === expectedAuth) {
+    if (req.method === 'GET' && !scriptId && !req.query.key && authHeader === expectedAuth) {
       const scripts = await getAllScripts();
       console.log('Fetched all scripts');
       return res.status(200).json(scripts);
@@ -133,26 +140,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ message: 'Script deleted' });
     }
 
-    // Public: Get specific script by headers (for / or /api/script.lua)
-    if (req.method === 'GET' && req.headers['header-1'] === 'script') {
-      const header2 = req.headers['header-2'];
-      const header3 = req.headers['header-3'];
-      if (!header2 || !header3) {
-        console.log('Blocked - missing headers');
-        return res.status(400).send('Missing required headers');
-      }
-      const key = `${header2}-${header3}`;
-      if (secretKey !== expectedKey) {
-        console.log('Blocked - invalid secret key');
-        return res.status(403).send('Access denied');
-      }
-      const { content, obfuscate } = await getScriptByKey(key);
-      const output = obfuscate ? simpleObfuscate(content) : content;
-      res.setHeader('Content-Type', 'text/plain');
-      console.log(`Served raw script: ${key} (obfuscated: ${obfuscate})`);
-      return res.status(200).send(output);
-    }
-
     // Fallback for invalid admin credentials
     if (authHeader && authHeader !== expectedAuth) {
       console.log('Blocked - invalid admin credentials');
@@ -164,8 +151,8 @@ export default async function handler(req, res) {
     return res.status(400).send('Invalid request');
   } catch (err) {
     console.error('Handler error:', err.message);
-    // For public script requests, return plain text error to avoid HTML fallback
-    if (req.method === 'GET' && req.headers['header-1'] === 'script') {
+    // For public script requests, return plain text error
+    if (req.method === 'GET' && scriptId) {
       res.setHeader('Content-Type', 'text/plain');
       return res.status(500).send(`Server error: ${err.message}`);
     }
