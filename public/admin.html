@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src https://cdnjs.cloudflare.com data:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src https://cdnjs.cloudflare.com data:; script-src 'self' 'unsafe-inline'">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <title>Script Dashboard | Frosted Glass</title>
@@ -504,6 +504,9 @@
             <button class="btn btn-secondary" onclick="loadScripts()">
                 <i class="fas fa-sync-alt"></i> Refresh List
             </button>
+            <button class="btn btn-success" onclick="debugTest()">
+                <i class="fas fa-bug"></i> Debug Test
+            </button>
         </div>
 
         <div class="script-list" id="scriptList">
@@ -593,172 +596,219 @@
     </div>
 
     <script>
+        // Debug function to test JavaScript execution
+        function debugTest() {
+            console.log('Debug Test button clicked');
+            alert('Debug Test: JavaScript is running. Check the console (F12) for errors.');
+        }
+
         let scripts = [];
         let currentScriptKey = null;
 
         // Browser compatibility check
         function checkBrowserCompatibility() {
-            const supportsBackdropFilter = CSS.supports('backdrop-filter', 'blur(10px)');
-            if (!supportsBackdropFilter) {
-                console.warn('Backdrop-filter not supported. Using fallback backgrounds.');
-                alert('Your browser does not support frosted glass effects. Some visual elements may look different.');
+            try {
+                const supportsBackdropFilter = CSS.supports('backdrop-filter', 'blur(10px)');
+                if (!supportsBackdropFilter) {
+                    console.warn('Backdrop-filter not supported. Using fallback backgrounds.');
+                    alert('Your browser does not support frosted glass effects. Some visual elements may look different.');
+                }
+                console.log('CSS loaded successfully. Font Awesome CDN loaded.');
+            } catch (err) {
+                console.error('Error in checkBrowserCompatibility:', err);
             }
-            console.log('CSS loaded successfully. Font Awesome CDN should be loaded.');
         }
 
         // Check auth on load
         async function checkAuth() {
-            const auth = localStorage.getItem('auth');
-            if (!auth) {
-                alert('No auth token found');
-                setTimeout(() => window.location.href = '/login.html', 1000);
+            try {
+                const auth = localStorage.getItem('auth');
+                if (!auth) {
+                    console.error('No auth token found');
+                    alert('No auth token found');
+                    setTimeout(() => window.location.href = '/login.html', 1000);
+                    return false;
+                }
+                return auth;
+            } catch (err) {
+                console.error('Error in checkAuth:', err);
+                alert('Auth error: ' + err.message);
                 return false;
             }
-            return auth;
-        }
-
-        // Character counters
-        document.getElementById('scriptTitle').addEventListener('input', function() {
-            const header3 = generateHeader3(this.value);
-            document.getElementById('scriptHeader3').value = header3;
-            document.getElementById('header3CharCount').textContent = header3.length;
-        });
-
-        document.getElementById('scriptHeader2').addEventListener('input', function() {
-            document.getElementById('header2CharCount').textContent = this.value.length;
-        });
-
-        document.getElementById('scriptHeader3').addEventListener('input', function() {
-            document.getElementById('header3CharCount').textContent = this.value.length;
-        });
-
-        document.getElementById('scriptContent').addEventListener('input', function() {
-            document.getElementById('contentCharCount').textContent = this.value.length;
-        });
-
-        // Generate 12-digit Header 2
-        function generateHeader2() {
-            const chars = '0123456789';
-            let id = '';
-            for (let i = 0; i < 12; i++) {
-                id += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            document.getElementById('scriptHeader2').value = id;
-            document.getElementById('header2CharCount').textContent = id.length;
-        }
-
-        // Generate Header 3 from title
-        function generateHeader3(title) {
-            return title
-                .toLowerCase()
-                .replace(/\s+/g, '')
-                .slice(0, 100);
         }
 
         // Modal functions
         function showModal(id) {
-            const modal = document.getElementById(id);
-            const modalContent = modal.querySelector('.modal');
-            modal.style.display = 'flex';
-            modal.classList.remove('disappear');
-            modal.classList.add('appear');
-            modalContent.classList.remove('disappear');
-            modalContent.classList.add('appear');
-            requestAnimationFrame(() => {
-                modal.style.background = 'rgba(0, 0, 0, 0.5)';
-                modalContent.style.opacity = '1';
-            });
+            try {
+                const modal = document.getElementById(id);
+                if (!modal) throw new Error(`Modal with ID ${id} not found`);
+                const modalContent = modal.querySelector('.modal');
+                if (!modalContent) throw new Error(`Modal content for ${id} not found`);
+                modal.style.display = 'flex';
+                modal.classList.remove('disappear');
+                modal.classList.add('appear');
+                modalContent.classList.remove('disappear');
+                modalContent.classList.add('appear');
+                requestAnimationFrame(() => {
+                    modal.style.background = 'rgba(0, 0, 0, 0.5)';
+                    modalContent.style.opacity = '1';
+                });
+                console.log(`Opened modal: ${id}`);
+            } catch (err) {
+                console.error('Error in showModal:', err);
+                alert('Modal error: ' + err.message);
+            }
         }
 
         function closeModal(id) {
-            const modal = document.getElementById(id);
-            const modalContent = modal.querySelector('.modal');
-            modal.classList.remove('appear');
-            modal.classList.add('disappear');
-            modalContent.classList.remove('appear');
-            modalContent.classList.add('disappear');
-            setTimeout(() => {
-                modal.style.display = 'none';
-                modal.style.background = 'rgba(0, 0, 0, 0)';
-                modal.classList.remove('disappear');
-                modalContent.classList.remove('disappear');
-            }, 400);
+            try {
+                const modal = document.getElementById(id);
+                if (!modal) throw new Error(`Modal with ID ${id} not found`);
+                const modalContent = modal.querySelector('.modal');
+                if (!modalContent) throw new Error(`Modal content for ${id} not found`);
+                modal.classList.remove('appear');
+                modal.classList.add('disappear');
+                modalContent.classList.remove('appear');
+                modalContent.classList.add('disappear');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    modal.style.background = 'rgba(0, 0, 0, 0)';
+                    modal.classList.remove('disappear');
+                    modalContent.classList.remove('disappear');
+                    console.log(`Closed modal: ${id}`);
+                }, 400);
+            } catch (err) {
+                console.error('Error in closeModal:', err);
+                alert('Modal close error: ' + err.message);
+            }
         }
 
         async function showCreateModal() {
-            const auth = await checkAuth();
-            if (!auth) return;
+            try {
+                const auth = await checkAuth();
+                if (!auth) return;
 
-            currentScriptKey = null;
-            document.getElementById('modalTitle').textContent = 'Create New Script';
-            document.getElementById('scriptTitle').value = '';
-            document.getElementById('scriptHeader1').value = 'script';
-            document.getElementById('scriptHeader2').value = '';
-            document.getElementById('scriptHeader3').value = '';
-            document.getElementById('scriptContent').value = '';
-            document.getElementById('scriptObfuscate').checked = false;
-            document.getElementById('header2CharCount').textContent = '0';
-            document.getElementById('header3CharCount').textContent = '0';
-            document.getElementById('contentCharCount').textContent = '0';
-            generateHeader2();
-            showModal('scriptModal');
+                currentScriptKey = null;
+                const modalTitle = document.getElementById('modalTitle');
+                const scriptTitle = document.getElementById('scriptTitle');
+                const scriptHeader1 = document.getElementById('scriptHeader1');
+                const scriptHeader2 = document.getElementById('scriptHeader2');
+                const scriptHeader3 = document.getElementById('scriptHeader3');
+                const scriptContent = document.getElementById('scriptContent');
+                const scriptObfuscate = document.getElementById('scriptObfuscate');
+                const header2CharCount = document.getElementById('header2CharCount');
+                const header3CharCount = document.getElementById('header3CharCount');
+                const contentCharCount = document.getElementById('contentCharCount');
+
+                if (!modalTitle || !scriptTitle || !scriptHeader1 || !scriptHeader2 || !scriptHeader3 || !scriptContent || !scriptObfuscate || !header2CharCount || !header3CharCount || !contentCharCount) {
+                    throw new Error('One or more form elements not found');
+                }
+
+                modalTitle.textContent = 'Create New Script';
+                scriptTitle.value = '';
+                scriptHeader1.value = 'script';
+                scriptHeader2.value = '';
+                scriptHeader3.value = '';
+                scriptContent.value = '';
+                scriptObfuscate.checked = false;
+                header2CharCount.textContent = '0';
+                header3CharCount.textContent = '0';
+                contentCharCount.textContent = '0';
+                generateHeader2();
+                showModal('scriptModal');
+            } catch (err) {
+                console.error('Error in showCreateModal:', err);
+                alert('Create modal error: ' + err.message);
+            }
         }
 
         async function showEditModal(key) {
-            const auth = await checkAuth();
-            if (!auth) return;
-
-            const script = scripts.find(s => s.key === key);
-            if (!script) return;
-
-            currentScriptKey = key;
-            document.getElementById('modalTitle').textContent = 'Edit Script';
-            document.getElementById('scriptTitle').value = script.title;
-            document.getElementById('scriptHeader1').value = 'script';
-            document.getElementById('scriptHeader2').value = key.slice(0, 12);
-            document.getElementById('scriptHeader3').value = key.slice(13);
-            document.getElementById('header2CharCount').textContent = key.slice(0, 12).length;
-            document.getElementById('header3CharCount').textContent = key.slice(13).length;
-
             try {
+                const auth = await checkAuth();
+                if (!auth) return;
+
+                const script = scripts.find(s => s.key === key);
+                if (!script) throw new Error(`Script with key ${key} not found`);
+
+                currentScriptKey = key;
+                const modalTitle = document.getElementById('modalTitle');
+                const scriptTitle = document.getElementById('scriptTitle');
+                const scriptHeader1 = document.getElementById('scriptHeader1');
+                const scriptHeader2 = document.getElementById('scriptHeader2');
+                const scriptHeader3 = document.getElementById('scriptHeader3');
+                const header2CharCount = document.getElementById('header2CharCount');
+                const header3CharCount = document.getElementById('header3CharCount');
+
+                if (!modalTitle || !scriptTitle || !scriptHeader1 || !scriptHeader2 || !scriptHeader3 || !header2CharCount || !header3CharCount) {
+                    throw new Error('One or more form elements not found');
+                }
+
+                modalTitle.textContent = 'Edit Script';
+                scriptTitle.value = script.title;
+                scriptHeader1.value = 'script';
+                scriptHeader2.value = key.slice(0, 12);
+                scriptHeader3.value = key.slice(13);
+                header2CharCount.textContent = key.slice(0, 12).length;
+                header3CharCount.textContent = key.slice(13).length;
+
                 const res = await fetch(`/api/script.lua?key=${encodeURIComponent(key)}`, {
                     headers: { 'Authorization': `Basic ${auth}` }
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    document.getElementById('scriptContent').value = data.content;
-                    document.getElementById('scriptObfuscate').checked = data.obfuscate;
-                    document.getElementById('contentCharCount').textContent = data.content.length;
+                    const scriptContent = document.getElementById('scriptContent');
+                    const scriptObfuscate = document.getElementById('scriptObfuscate');
+                    const contentCharCount = document.getElementById('contentCharCount');
+
+                    if (!scriptContent || !scriptObfuscate || !contentCharCount) {
+                        throw new Error('Script content elements not found');
+                    }
+
+                    scriptContent.value = data.content;
+                    scriptObfuscate.checked = data.obfuscate;
+                    contentCharCount.textContent = data.content.length;
                     showModal('scriptModal');
                 } else {
+                    console.error(`Fetch error: ${res.status} ${await res.text()}`);
                     alert(`Error: ${res.status} ${await res.text()}`);
                     setTimeout(() => window.location.href = '/login.html', 2000);
                 }
             } catch (err) {
-                alert(`Fetch error: ${err.message}`);
-                setTimeout(() => window.location.href = '/login.html', 2000);
+                console.error('Error in showEditModal:', err);
+                alert('Edit modal error: ' + err.message);
             }
         }
 
         async function showDeleteModal(key) {
-            const auth = await checkAuth();
-            if (!auth) return;
+            try {
+                const auth = await checkAuth();
+                if (!auth) return;
 
-            const script = scripts.find(s => s.key === key);
-            if (!script) return;
+                const script = scripts.find(s => s.key === key);
+                if (!script) throw new Error(`Script with key ${key} not found`);
 
-            currentScriptKey = key;
-            document.getElementById('deleteScriptName').textContent = script.title;
-            showModal('deleteModal');
+                currentScriptKey = key;
+                const deleteScriptName = document.getElementById('deleteScriptName');
+                if (!deleteScriptName) throw new Error('Delete script name element not found');
+
+                deleteScriptName.textContent = script.title;
+                showModal('deleteModal');
+            } catch (err) {
+                console.error('Error in showDeleteModal:', err);
+                alert('Delete modal error: ' + err.message);
+            }
         }
 
         async function loadScripts() {
-            const auth = await checkAuth();
-            if (!auth) return;
-
-            document.getElementById('scriptList').innerHTML = '<p style="text-align: center; padding: 30px; color: var(--text-light)">Loading scripts...</p>';
-
             try {
+                const auth = await checkAuth();
+                if (!auth) return;
+
+                const scriptList = document.getElementById('scriptList');
+                if (!scriptList) throw new Error('Script list element not found');
+
+                scriptList.innerHTML = '<p style="text-align: center; padding: 30px; color: var(--text-light)">Loading scripts...</p>';
+
                 const res = await fetch('/api/script.lua', {
                     headers: { 'Authorization': `Basic ${auth}` }
                 });
@@ -766,91 +816,101 @@
                     scripts = await res.json();
                     renderScripts();
                 } else {
+                    console.error(`Fetch error: ${res.status} ${await res.text()}`);
                     alert(`Error: ${res.status} ${await res.text()}`);
                     setTimeout(() => window.location.href = '/login.html', 2000);
                 }
             } catch (err) {
-                alert(`Fetch error: ${err.message}`);
-                setTimeout(() => window.location.href = '/login.html', 2000);
+                console.error('Error in loadScripts:', err);
+                alert('Load scripts error: ' + err.message);
             }
         }
 
         function renderScripts() {
-            const scriptList = document.getElementById('scriptList');
+            try {
+                const scriptList = document.getElementById('scriptList');
+                if (!scriptList) throw new Error('Script list element not found');
 
-            if (scripts.length === 0) {
-                scriptList.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-code"></i>
-                        <p>No scripts found. Create your first script to get started.</p>
-                    </div>
-                `;
-                return;
+                if (scripts.length === 0) {
+                    scriptList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-code"></i>
+                            <p>No scripts found. Create your first script to get started.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                scriptList.innerHTML = '';
+
+                scripts.forEach(script => {
+                    const item = document.createElement('div');
+                    item.className = 'script-item';
+                    item.innerHTML = `
+                        <div class="script-info">
+                            <div class="script-title">${script.title}</div>
+                            <div class="script-key">Key: ${script.key}</div>
+                        </div>
+                        <div class="script-actions">
+                            <button class="action-btn btn-secondary" onclick="copyScript('${script.key}')">
+                                <i class="fas fa-copy"></i> Copy Script
+                            </button>
+                            <button class="action-btn btn-primary" onclick="showEditModal('${script.key}')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="action-btn btn-danger" onclick="showDeleteModal('${script.key}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    `;
+                    scriptList.appendChild(item);
+                });
+                console.log('Scripts rendered successfully');
+            } catch (err) {
+                console.error('Error in renderScripts:', err);
+                alert('Render scripts error: ' + err.message);
             }
-
-            scriptList.innerHTML = '';
-
-            scripts.forEach(script => {
-                const item = document.createElement('div');
-                item.className = 'script-item';
-                item.innerHTML = `
-                    <div class="script-info">
-                        <div class="script-title">${script.title}</div>
-                        <div class="script-key">Key: ${script.key}</div>
-                    </div>
-                    <div class="script-actions">
-                        <button class="action-btn btn-secondary" onclick="copyScript('${script.key}')">
-                            <i class="fas fa-copy"></i> Copy Script
-                        </button>
-                        <button class="action-btn btn-primary" onclick="showEditModal('${script.key}')">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="action-btn btn-danger" onclick="showDeleteModal('${script.key}')">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </div>
-                `;
-                scriptList.appendChild(item);
-            });
         }
 
         async function saveScript() {
-            const auth = await checkAuth();
-            if (!auth) return;
-
-            const title = document.getElementById('scriptTitle').value.trim();
-            const header2 = document.getElementById('scriptHeader2').value.trim();
-            const header3 = document.getElementById('scriptHeader3').value.trim();
-            const content = document.getElementById('scriptContent').value;
-            const obfuscate = document.getElementById('scriptObfuscate').checked;
-
-            if (!title || !header2 || !header3 || !content) {
-                alert('Please fill in all fields');
-                return;
-            }
-
-            if (header2.length !== 12 || !/^\d+$/.test(header2)) {
-                alert('Header 2 must be exactly 12 digits');
-                return;
-            }
-
-            if (header3.length > 100) {
-                alert('Header 3 must be 100 characters or less');
-                return;
-            }
-
-            if (content.length > 200000) {
-                alert('Script content must be 200,000 characters or less');
-                return;
-            }
-
-            const key = `${header2}-${header3}`;
-            const btn = document.getElementById('saveScriptBtn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-            btn.disabled = true;
-
             try {
+                const auth = await checkAuth();
+                if (!auth) return;
+
+                const title = document.getElementById('scriptTitle').value.trim();
+                const header2 = document.getElementById('scriptHeader2').value.trim();
+                const header3 = document.getElementById('scriptHeader3').value.trim();
+                const content = document.getElementById('scriptContent').value;
+                const obfuscate = document.getElementById('scriptObfuscate').checked;
+
+                if (!title || !header2 || !header3 || !content) {
+                    alert('Please fill in all fields');
+                    return;
+                }
+
+                if (header2.length !== 12 || !/^\d+$/.test(header2)) {
+                    alert('Header 2 must be exactly 12 digits');
+                    return;
+                }
+
+                if (header3.length > 100) {
+                    alert('Header 3 must be 100 characters or less');
+                    return;
+                }
+
+                if (content.length > 200000) {
+                    alert('Script content must be 200,000 characters or less');
+                    return;
+                }
+
+                const key = `${header2}-${header3}`;
+                const btn = document.getElementById('saveScriptBtn');
+                if (!btn) throw new Error('Save script button not found');
+
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                btn.disabled = true;
+
                 const res = await fetch('/api/script.lua', {
                     method: 'POST',
                     headers: {
@@ -864,23 +924,28 @@
                     await loadScripts();
                     alert(`Script "${title}" has been ${currentScriptKey ? 'updated' : 'created'} successfully!`);
                 } else {
+                    console.error(`Save error: ${res.status} ${await res.text()}`);
                     alert(`Error: ${res.status} ${await res.text()}`);
                 }
             } catch (err) {
-                alert(`Save error: ${err.message}`);
+                console.error('Error in saveScript:', err);
+                alert('Save script error: ' + err.message);
             } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+                const btn = document.getElementById('saveScriptBtn');
+                if (btn) {
+                    btn.innerHTML = '<i class="fas fa-save"></i> Save Script';
+                    btn.disabled = false;
+                }
             }
         }
 
         async function confirmDelete() {
-            const auth = await checkAuth();
-            if (!auth) return;
-
-            if (!currentScriptKey) return;
-
             try {
+                const auth = await checkAuth();
+                if (!auth) return;
+
+                if (!currentScriptKey) throw new Error('No script key selected for deletion');
+
                 const res = await fetch(`/api/script.lua?key=${encodeURIComponent(currentScriptKey)}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Basic ${auth}` }
@@ -890,16 +955,19 @@
                     await loadScripts();
                     alert('Script has been deleted successfully!');
                 } else {
+                    console.error(`Delete error: ${res.status} ${await res.text()}`);
                     alert(`Error: ${res.status} ${await res.text()}`);
                 }
             } catch (err) {
-                alert(`Delete error: ${err.message}`);
+                console.error('Error in confirmDelete:', err);
+                alert('Delete error: ' + err.message);
             }
         }
 
         function copyScript(key) {
-            const [header2, header3] = key.split('-');
-            const luaScript = `local http = game:GetService("HttpService")
+            try {
+                const [header2, header3] = key.split('-');
+                const luaScript = `local http = game:GetService("HttpService")
 local headers = {
     ["Header 1"] = "script",
     ["Header 2"] = "${header2}",
@@ -908,18 +976,128 @@ local headers = {
 local response = http:GetAsync("${window.location.origin}/api/script.lua", true, headers)
 loadstring(response)()`;
 
-            navigator.clipboard.writeText(luaScript)
-                .then(() => alert('Lua script copied to clipboard!'))
-                .catch(err => {
-                    console.error('Failed to copy: ', err);
-                    alert('Failed to copy script');
-                });
+                navigator.clipboard.writeText(luaScript)
+                    .then(() => {
+                        console.log('Script copied to clipboard');
+                        alert('Lua script copied to clipboard!');
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy script:', err);
+                        alert('Failed to copy script: ' + err.message);
+                    });
+            } catch (err) {
+                console.error('Error in copyScript:', err);
+                alert('Copy script error: ' + err.message);
+            }
         }
 
-        // Run checks and load scripts
+        // Generate 12-digit Header 2
+        function generateHeader2() {
+            try {
+                const chars = '0123456789';
+                let id = '';
+                for (let i = 0; i < 12; i++) {
+                    id += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                const scriptHeader2 = document.getElementById('scriptHeader2');
+                const header2CharCount = document.getElementById('header2CharCount');
+                if (!scriptHeader2 || !header2CharCount) throw new Error('Header 2 elements not found');
+                scriptHeader2.value = id;
+                header2CharCount.textContent = id.length;
+                console.log('Generated Header 2:', id);
+            } catch (err) {
+                console.error('Error in generateHeader2:', err);
+                alert('Generate Header 2 error: ' + err.message);
+            }
+        }
+
+        // Generate Header 3 from title
+        function generateHeader3(title) {
+            try {
+                return title
+                    .toLowerCase()
+                    .replace(/\s+/g, '')
+                    .slice(0, 100);
+            } catch (err) {
+                console.error('Error in generateHeader3:', err);
+                alert('Generate Header 3 error: ' + err.message);
+                return '';
+            }
+        }
+
+        // Initialize event listeners and load scripts
         document.addEventListener('DOMContentLoaded', () => {
-            checkBrowserCompatibility();
-            setTimeout(loadScripts, 100);
+            try {
+                checkBrowserCompatibility();
+
+                // Set up event listeners
+                const scriptTitle = document.getElementById('scriptTitle');
+                const scriptHeader2 = document.getElementById('scriptHeader2');
+                const scriptHeader3 = document.getElementById('scriptHeader3');
+                const scriptContent = document.getElementById('scriptContent');
+
+                if (!scriptTitle || !scriptHeader2 || !scriptHeader3 || !scriptContent) {
+                    throw new Error('One or more form elements not found');
+                }
+
+                scriptTitle.addEventListener('input', function() {
+                    try {
+                        const header3 = generateHeader3(this.value);
+                        const scriptHeader3 = document.getElementById('scriptHeader3');
+                        const header3CharCount = document.getElementById('header3CharCount');
+                        if (!scriptHeader3 || !header3CharCount) throw new Error('Header 3 elements not found');
+                        scriptHeader3.value = header3;
+                        header3CharCount.textContent = header3.length;
+                        console.log('Updated Header 3:', header3);
+                    } catch (err) {
+                        console.error('Error in scriptTitle input listener:', err);
+                        alert('Title input error: ' + err.message);
+                    }
+                });
+
+                scriptHeader2.addEventListener('input', function() {
+                    try {
+                        const header2CharCount = document.getElementById('header2CharCount');
+                        if (!header2CharCount) throw new Error('Header 2 char count element not found');
+                        header2CharCount.textContent = this.value.length;
+                        console.log('Updated Header 2 char count:', this.value.length);
+                    } catch (err) {
+                        console.error('Error in scriptHeader2 input listener:', err);
+                        alert('Header 2 input error: ' + err.message);
+                    }
+                });
+
+                scriptHeader3.addEventListener('input', function() {
+                    try {
+                        const header3CharCount = document.getElementById('header3CharCount');
+                        if (!header3CharCount) throw new Error('Header 3 char count element not found');
+                        header3CharCount.textContent = this.value.length;
+                        console.log('Updated Header 3 char count:', this.value.length);
+                    } catch (err) {
+                        console.error('Error in scriptHeader3 input listener:', err);
+                        alert('Header 3 input error: ' + err.message);
+                    }
+                });
+
+                scriptContent.addEventListener('input', function() {
+                    try {
+                        const contentCharCount = document.getElementById('contentCharCount');
+                        if (!contentCharCount) throw new Error('Content char count element not found');
+                        contentCharCount.textContent = this.value.length;
+                        console.log('Updated content char count:', this.value.length);
+                    } catch (err) {
+                        console.error('Error in scriptContent input listener:', err);
+                        alert('Content input error: ' + err.message);
+                    }
+                });
+
+                // Load scripts
+                loadScripts();
+                console.log('DOM fully loaded and event listeners set up');
+            } catch (err) {
+                console.error('Error in DOMContentLoaded:', err);
+                alert('Initialization error: ' + err.message);
+            }
         });
     </script>
 </body>
