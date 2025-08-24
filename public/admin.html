@@ -18,11 +18,11 @@
             --success-dark: #3d8b40;
             --text: white;
             --text-light: rgba(255, 255, 255, 0.7);
-            --bg-blur: rgba(0, 0, 128, 0.15); /* Navy blue for buttons */
-            --bg-blur-fallback: rgba(0, 0, 128, 0.3); /* Fallback for no backdrop-filter */
+            --bg-blur: rgba(0, 0, 128, 0.15);
+            --bg-blur-fallback: rgba(0, 0, 128, 0.3);
             --border-light: rgba(255, 255, 255, 0.2);
-            --card-bg: rgba(0, 0, 128, 0.1); /* Navy blue for script items, list, inputs */
-            --card-bg-fallback: rgba(0, 0, 128, 0.25); /* Fallback for no backdrop-filter */
+            --card-bg: rgba(0, 0, 128, 0.1);
+            --card-bg-fallback: rgba(0, 0, 128, 0.25);
         }
 
         * {
@@ -57,7 +57,7 @@
             max-width: 1200px;
             margin: 0 auto;
             background: var(--bg-blur);
-            background: var(--bg-blur-fallback); /* Fallback */
+            background: var(--bg-blur-fallback);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             padding: 30px;
@@ -65,7 +65,7 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             border: 1px solid var(--border-light);
             text-align: center;
-            display: none; /* Hidden until auth is verified */
+            display: none;
         }
 
         header {
@@ -642,7 +642,6 @@
                     window.location.href = '/login.html';
                     return false;
                 }
-                // Verify auth token with server
                 const res = await fetch('/api/script.lua', {
                     headers: { 'Authorization': `Basic ${auth}` }
                 });
@@ -780,14 +779,29 @@
                     headers: { 'Authorization': `Basic ${auth}` }
                 });
                 if (res.ok) {
-                    const data = await res.json();
-                    console.log('Fetched script data:', data); // Debug response
-                    if (!data || typeof data.content !== 'string' || typeof data.obfuscate !== 'boolean') {
-                        throw new Error('Invalid response format: content or obfuscate missing');
+                    let data;
+                    try {
+                        data = await res.json();
+                        console.log('Fetched script data:', data);
+                    } catch (err) {
+                        throw new Error('Failed to parse response as JSON');
                     }
-                    scriptContent.value = data.content || '';
-                    scriptObfuscate.checked = data.obfuscate || false;
-                    contentCharCount.textContent = (data.content || '').length;
+                    // Ensure data has required fields
+                    if (!data || typeof data !== 'object') {
+                        console.warn('Invalid response format, using defaults');
+                        data = { content: '', obfuscate: false };
+                    }
+                    if (typeof data.content !== 'string') {
+                        console.warn('Missing or invalid content, defaulting to empty string');
+                        data.content = '';
+                    }
+                    if (typeof data.obfuscate !== 'boolean') {
+                        console.warn('Missing or invalid obfuscate, defaulting to false');
+                        data.obfuscate = false;
+                    }
+                    scriptContent.value = data.content;
+                    scriptObfuscate.checked = data.obfuscate;
+                    contentCharCount.textContent = data.content.length;
                     showModal('scriptModal');
                 } else {
                     const errorText = await res.text();
@@ -999,13 +1013,11 @@
         function copyScript(key) {
             try {
                 const [header2, header3] = key.split('-');
-                const luaScript = `local http = game:GetService("HttpService")
-local headers = {
-    ["Header 1"] = "script",
-    ["Header 2"] = "${header2}",
-    ["Header 3"] = "${header3}"
-}
-local response = http:GetAsync("${window.location.origin}/api/script.lua", true, headers)
+                const luaScript = `local response = game:HttpGet('https://rawscriptserver.vercel.app/api/script.lua', true, {
+    ["Header-1"] = "script",
+    ["Header-2"] = "${header2}",
+    ["Header-3"] = "${header3}"
+})
 loadstring(response)()`;
 
                 navigator.clipboard.writeText(luaScript)
@@ -1064,17 +1076,14 @@ loadstring(response)()`;
                     throw new Error('Loading or dashboard elements not found');
                 }
 
-                // Check auth before rendering
                 const auth = await checkAuth();
                 if (!auth) return;
 
-                // Hide loading and show dashboard
                 loading.style.display = 'none';
                 dashboard.style.display = 'block';
 
                 checkBrowserCompatibility();
 
-                // Set up event listeners
                 const scriptTitle = document.getElementById('scriptTitle');
                 const scriptHeader2 = document.getElementById('scriptHeader2');
                 const scriptHeader3 = document.getElementById('scriptHeader3');
@@ -1135,7 +1144,6 @@ loadstring(response)()`;
                     }
                 });
 
-                // Load scripts
                 await loadScripts();
                 console.log('DOM fully loaded and event listeners set up');
             } catch (err) {
