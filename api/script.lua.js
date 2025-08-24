@@ -2,11 +2,11 @@ const { MongoClient } = require('mongodb');
 
 const uri = process.env.MONGO_URI;
 if (!uri) {
-  console.error('MONGO_URI is not defined in environment variables');
+  console.error('MONGO_URI is not defined');
   throw new Error('MONGO_URI is not defined');
 }
 const client = new MongoClient(uri);
-let db; // Cached DB connection
+let db;
 
 async function connectToDB() {
   try {
@@ -18,6 +18,28 @@ async function connectToDB() {
   } catch (err) {
     console.error('MongoDB connection error:', err.message);
     throw new Error(`Failed to connect to database: ${err.message}`);
+  }
+}
+
+async function getScriptByKey(key) {
+  try {
+    const collection = await connectToDB();
+    const doc = await collection.findOne({ _id: key });
+    console.log(`MongoDB query for key ${key}:`, doc);
+    if (!doc) {
+      console.error(`Script not found for key: ${key}`);
+      throw new Error('Script not found');
+    }
+    if (typeof doc.content !== 'string' || !doc.content) {
+      console.warn(`Invalid or empty content for key ${key}, defaulting to empty string`);
+    }
+    return {
+      content: typeof doc.content === 'string' ? doc.content : '',
+      obfuscate: typeof doc.obfuscate === 'boolean' ? doc.obfuscate : false
+    };
+  } catch (err) {
+    console.error('MongoDB get script error:', err.message);
+    throw new Error(`Failed to fetch script: ${err.message}`);
   }
 }
 
@@ -34,28 +56,6 @@ async function getAllScripts() {
   } catch (err) {
     console.error('MongoDB get all scripts error:', err.message);
     throw new Error(`Failed to fetch scripts: ${err.message}`);
-  }
-}
-
-async function getScriptByKey(key) {
-  try {
-    const collection = await connectToDB();
-    const doc = await collection.findOne({ _id: key });
-    console.log(`MongoDB query for key ${key}:`, doc); // Debug document
-    if (!doc) {
-      console.error(`Script not found for key: ${key}`);
-      throw new Error('Script not found');
-    }
-    if (typeof doc.content !== 'string' || !doc.content) {
-      console.warn(`Invalid or empty content for key ${key}, defaulting to empty string`);
-    }
-    return {
-      content: typeof doc.content === 'string' ? doc.content : '',
-      obfuscate: typeof doc.obfuscate === 'boolean' ? doc.obfuscate : false
-    };
-  } catch (err) {
-    console.error('MongoDB get script error:', err.message);
-    throw new Error(`Failed to fetch script: ${err.message}`);
   }
 }
 
@@ -95,11 +95,11 @@ function simpleObfuscate(code) {
 export default async function handler(req, res) {
   const authHeader = req.headers.authorization;
   const expectedAuth = `Basic ${Buffer.from(`${process.env.ADMIN_USERNAME}:${process.env.ADMIN_PASSWORD}`).toString('base64')}`;
-  const scriptId = req.params?.scriptid; // From /api/script.lua/:scriptid
+  const scriptId = req.params?.scriptid;
 
   try {
-    // Public: Get raw script by scriptid (no auth required)
     if (req.method === 'GET' && scriptId) {
+      console.log(`Handling GET /api/script.lua/${scriptId}`);
       const { content, obfuscate } = await getScriptByKey(scriptId);
       const output = obfuscate ? simpleObfuscate(content) : content;
       res.setHeader('Content-Type', 'text/plain');
@@ -107,21 +107,18 @@ export default async function handler(req, res) {
       return res.status(200).send(output);
     }
 
-    // Admin: Get all scripts
     if (req.method === 'GET' && !scriptId && !req.query.key && authHeader === expectedAuth) {
       const scripts = await getAllScripts();
       console.log('Fetched all scripts');
       return res.status(200).json(scripts);
     }
 
-    // Admin: Get specific script by key (for edit modal)
     if (req.method === 'GET' && req.query.key && authHeader === expectedAuth) {
       const { content, obfuscate } = await getScriptByKey(req.query.key);
       console.log(`Served script for edit: ${req.query.key}`);
       return res.status(200).json({ content, obfuscate });
     }
 
-    // Admin: Save script
     if (req.method === 'POST' && authHeader === expectedAuth) {
       const { key, title, content, obfuscate } = req.body;
       if (!key || !title || !content) {
@@ -133,28 +130,24 @@ export default async function handler(req, res) {
       return res.status(200).json({ message: 'Script saved' });
     }
 
-    // Admin: Delete script
     if (req.method === 'DELETE' && req.query.key && authHeader === expectedAuth) {
       await deleteScript(req.query.key);
       console.log(`Deleted script: ${req.query.key}`);
       return res.status(200).json({ message: 'Script deleted' });
     }
 
-    // Fallback for invalid admin credentials
     if (authHeader && authHeader !== expectedAuth) {
       console.log('Blocked - invalid admin credentials');
       return res.status(401).send('Invalid admin credentials');
     }
 
-    // Fallback for invalid requests
     console.log('Blocked - invalid request');
     return res.status(400).send('Invalid request');
   } catch (err) {
     console.error('Handler error:', err.message);
-    // For public script requests, return plain text error
     if (req.method === 'GET' && scriptId) {
       res.setHeader('Content-Type', 'text/plain');
-      return res.status(500).send(`Server error: ${err.message}`);
+      return res.status(404).send(`Script not found: ${err.message}`);
     }
     return res.status(500).json({ error: `Server error: ${err.message}` });
   }
