@@ -2,10 +2,19 @@
   "rewrites": [
     {
       "source": "/scripts/:scriptid",
-      "destination": "/api/script.lua/:scriptid"
+      "destination": "/api/script.lua"
     },
-    { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/(.*)", "destination": "/public/$1" },
-    { "source": "/", "destination": "/public/index.html" }
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/public/:path*"
+    },
+    {
+      "source": "/",
+      "destination": "/public/index.html"
+    }
   ]
 }
