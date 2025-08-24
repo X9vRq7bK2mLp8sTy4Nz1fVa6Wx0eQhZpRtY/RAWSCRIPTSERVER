@@ -27,9 +27,9 @@ async function getAllScripts() {
     const scripts = await collection.find({}).toArray();
     return scripts.map(doc => ({
       key: doc._id,
-      title: doc.title,
-      content: doc.content,
-      obfuscate: doc.obfuscate
+      title: doc.title || 'Untitled',
+      content: doc.content || '',
+      obfuscate: doc.obfuscate || false
     }));
   } catch (err) {
     console.error('MongoDB get all scripts error:', err.message);
@@ -44,7 +44,11 @@ async function getScriptByKey(key) {
     if (!doc) {
       throw new Error('Script not found');
     }
-    return { content: doc.content, obfuscate: doc.obfuscate };
+    console.log('MongoDB document:', doc); // Debug document
+    return {
+      content: typeof doc.content === 'string' ? doc.content : '',
+      obfuscate: typeof doc.obfuscate === 'boolean' ? doc.obfuscate : false
+    };
   } catch (err) {
     console.error('MongoDB get script error:', err.message);
     throw new Error(`Failed to fetch script: ${err.message}`);
@@ -114,14 +118,18 @@ export default async function handler(req, res) {
       return res.status(200).json({ message: 'Script deleted' });
     }
 
-    // Public: Get specific script by headers
+    // Public: Get specific script by headers (for both /api/script.lua and /)
     if (req.method === 'GET' && req.headers['header-1'] === 'script') {
       const header2 = req.headers['header-2'];
       const header3 = req.headers['header-3'];
+      if (!header2 || !header3) {
+        console.log('Blocked - missing headers');
+        return res.status(400).send('Missing required headers');
+      }
       const key = `${header2}-${header3}`;
       if (secretKey !== expectedKey) {
         console.log('Blocked - invalid secret key');
-        return res.status(403).send('access denied');
+        return res.status(403).send('Access denied');
       }
       const { content, obfuscate } = await getScriptByKey(key);
       const output = obfuscate ? simpleObfuscate(content) : content;
