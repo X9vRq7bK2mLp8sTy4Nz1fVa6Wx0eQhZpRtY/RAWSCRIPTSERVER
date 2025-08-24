@@ -65,25 +65,30 @@ export default async function handler(req, res) {
     if (req.method === 'POST' && authHeader === expectedAuth) {
       const { content, obfuscate: newObfuscate } = req.body;
       await updateScriptInDB(content || '', newObfuscate === true || newObfuscate === 'true');
+      console.log("Updated");
       return res.status(200).json({ message: 'Script updated' });
     }
 
     if (req.method === 'GET' && authHeader === expectedAuth) {
       const { content, obfuscate } = await getScriptFromDB();
+      console.log("Executed");
       return res.status(200).json({ content, obfuscate });
     }
 
     if (authHeader && authHeader !== expectedAuth) {
+      console.log("Blocked - invalid admin credentials");
       return res.status(401).send('Invalid admin credentials');
     }
 
     if (secretKey !== expectedKey) {
+      console.log("Blocked - key incorrect");
       return res.status(403).send('access denied');
     }
 
     const { content, obfuscate } = await getScriptFromDB();
     const output = obfuscate ? simpleObfuscate(content) : content;
     res.setHeader('Content-Type', 'text/plain');
+    console.log("Executed");
     return res.status(200).send(output);
   } catch (err) {
     console.error('Handler error:', err.message);
