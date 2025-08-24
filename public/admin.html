@@ -1,79 +1,896 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f0f0f0; }
-    .container { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto; }
-    textarea { width: 100%; height: 300px; margin: 10px 0; }
-    button { padding: 10px; background-color: #007bff; color: white; border: none; cursor: pointer; }
-    button:hover { background-color: #0056b3; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <title>Script Dashboard | Frosted Glass</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --primary-dark: #564fd8;
+            --danger: #FF4B4B;
+            --danger-dark: #e04444;
+            --success: #4CAF50;
+            --success-dark: #3d8b40;
+            --text: white;
+            --text-light: rgba(255, 255, 255, 0.7);
+            --bg-blur: rgba(0, 0, 128, 0.15); /* Navy blue for buttons */
+            --border-light: rgba(255, 255, 255, 0.2);
+            --card-bg: rgba(0, 0, 128, 0.1); /* Navy blue for script items, list, inputs */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-blur);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-light);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #e6e6e6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--bg-blur);
+            color: var(--text);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 0, 128, 0.2);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: var(--success-dark);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger-dark);
+        }
+
+        .script-list {
+            margin-top: 20px;
+            max-height: 50vh;
+            overflow-y: auto;
+            border-radius: 12px;
+            padding: 15px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-light);
+        }
+
+        .script-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .script-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 128, 0.1);
+            border-radius: 4px;
+        }
+
+        .script-list::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        .script-item {
+            padding: 20px;
+            border-bottom: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background: var(--card-bg);
+        }
+
+        .script-item:hover {
+            background: rgba(0, 0, 128, 0.2);
+            transform: translateX(5px);
+        }
+
+        .script-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .script-info {
+            flex: 1;
+        }
+
+        .script-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 5px;
+        }
+
+        .script-key {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            font-family: monospace;
+            margin-bottom: 8px;
+            word-break: break-all;
+        }
+
+        .script-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+            background: var(--bg-blur);
+            color: var(--text);
+            border: 1px solid var(--border-light);
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 0, 128, 0.2);
+        }
+
+        .action-btn.btn-primary {
+            background: var(--primary);
+            border: none;
+        }
+
+        .action-btn.btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .action-btn.btn-danger {
+            background: var(--danger);
+            border: none;
+        }
+
+        .action-btn.btn-danger:hover {
+            background: var(--danger-dark);
+        }
+
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+            transition: background 0.4s ease-in-out;
+        }
+
+        .modal-backdrop.appear {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-backdrop.disappear {
+            background: rgba(0, 0, 0, 0);
+        }
+
+        .modal {
+            background: var(--bg-blur);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-light);
+            transform-origin: center center;
+        }
+
+        .modal.appear {
+            animation: modalAppear 0.4s ease-in-out;
+        }
+
+        .modal.disappear {
+            animation: modalDisappear 0.4s ease-in-out;
+        }
+
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes modalDisappear {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            color: var(--text);
+            transform: rotate(90deg);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 15px;
+            font-size: 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.3);
+            background: rgba(0, 0, 128, 0.2);
+        }
+
+        input:disabled {
+            background: rgba(0, 0, 128, 0.3);
+            color: var(--text-light);
+            cursor: not-allowed;
+        }
+
+        textarea {
+            min-height: 200px;
+            font-family: monospace;
+            resize: vertical;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .confirmation-modal {
+            text-align: center;
+        }
+
+        .confirmation-text {
+            margin-bottom: 25px;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .script-name {
+            font-weight: 700;
+            color: var(--text);
+            background: var(--card-bg);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: inline-block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--text-light);
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            color: var(--text);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .script-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .script-actions {
+                width: 100%;
+                margin-top: 15px;
+                justify-content: flex-end;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Edit Lua Script</h2>
-    <textarea id="script" placeholder="Enter Lua script here"></textarea>
-    <label><input type="checkbox" id="obfuscate"> Obfuscate Script</label>
-    <button onclick="saveScript()">Save Script</button>
-    <p id="status"></p>
-    <p id="error" style="color: red;"></p>
-  </div>
-  <script>
-    async function loadScript() {
-      const auth = localStorage.getItem('auth');
-      if (!auth) {
-        document.getElementById('error').textContent = 'No auth token found';
-        setTimeout(() => window.location.href = '/login.html', 1000);
-        return;
-      }
-      try {
-        const res = await fetch('/api/script.lua', {
-          headers: { 'Authorization': `Basic ${auth}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          document.getElementById('script').value = data.content;
-          document.getElementById('obfuscate').checked = data.obfuscate;
-          document.getElementById('status').textContent = 'Script loaded';
-        } else {
-          document.getElementById('error').textContent = `Error: ${res.status} ${await res.text()}`;
-          setTimeout(() => window.location.href = '/login.html', 2000);
+    <div class="container">
+        <header>
+            <h1>Script Dashboard</h1>
+            <p class="subtitle">Manage your scripts with style</p>
+        </header>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="showCreateModal()">
+                <i class="fas fa-plus"></i> Create New Script
+            </button>
+            <button class="btn btn-secondary" onclick="loadScripts()">
+                <i class="fas fa-sync-alt"></i> Refresh List
+            </button>
+        </div>
+
+        <div class="script-list" id="scriptList">
+            <div class="empty-state">
+                <i class="fas fa-code"></i>
+                <p>No scripts found. Create your first script to get started.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal-backdrop" id="scriptModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Create New Script</h2>
+                <button class="close-btn" onclick="closeModal('scriptModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label for="scriptTitle">Script Title</label>
+                <input type="text" id="scriptTitle" placeholder="Enter a descriptive name for your script">
+            </div>
+
+            <div class="form-group">
+                <label for="scriptHeader1">Header 1</label>
+                <input type="text" id="scriptHeader1" value="script" disabled>
+            </div>
+
+            <div class="form-group">
+                <label for="scriptHeader2">Header 2 (12 digits)</label>
+                <input type="text" id="scriptHeader2" maxlength="12" placeholder="Enter or generate 12-digit ID">
+                <button class="btn btn-secondary" style="margin-top: 10px; width: auto;" onclick="generateHeader2()">
+                    <i class="fas fa-redo"></i> Regenerate
+                </button>
+                <div class="char-count"><span id="header2CharCount">0</span>/12 characters</div>
+            </div>
+
+            <div class="form-group">
+                <label for="scriptHeader3">Header 3</label>
+                <input type="text" id="scriptHeader3" placeholder="Script title (lowercase, no spaces)">
+                <div class="char-count"><span id="header3CharCount">0</span>/100 characters</div>
+            </div>
+
+            <div class="form-group">
+                <label for="scriptContent">Script Content (200,000 characters max)</label>
+                <textarea id="scriptContent" placeholder="Paste your Lua script here"></textarea>
+                <div class="char-count"><span id="contentCharCount">0</span>/200000 characters</div>
+            </div>
+
+            <div class="form-group">
+                <label><input type="checkbox" id="scriptObfuscate"> Obfuscate Script</label>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('scriptModal')">Cancel</button>
+                <button class="btn btn-primary" id="saveScriptBtn" onclick="saveScript()">
+                    <i class="fas fa-save"></i> Save Script
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-backdrop" id="deleteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Confirm Deletion</h2>
+                <button class="close-btn" onclick="closeModal('deleteModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="confirmation-modal">
+                <p class="confirmation-text">Are you sure you want to delete this script? This action cannot be undone.</p>
+                <div class="script-name" id="deleteScriptName"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="fas fa-trash"></i> Delete Script
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let scripts = [];
+        let currentScriptKey = null;
+
+        // Check auth on load
+        async function checkAuth() {
+            const auth = localStorage.getItem('auth');
+            if (!auth) {
+                alert('No auth token found');
+                setTimeout(() => window.location.href = '/login.html', 1000);
+                return false;
+            }
+            return auth;
         }
-      } catch (err) {
-        document.getElementById('error').textContent = `Fetch error: ${err.message}`;
-        setTimeout(() => window.location.href = '/login.html', 2000);
-      }
-    }
 
-    async function saveScript() {
-      const auth = localStorage.getItem('auth');
-      if (!auth) {
-        document.getElementById('error').textContent = 'No auth token found';
-        setTimeout(() => window.location.href = '/login.html', 1000);
-        return;
-      }
-      const content = document.getElementById('script').value;
-      const obfuscate = document.getElementById('obfuscate').checked;
-      try {
-        const res = await fetch('/api/script.lua', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json', 
-            'Authorization': `Basic ${auth}` 
-          },
-          body: JSON.stringify({ content, obfuscate })
+        // Character counters
+        document.getElementById('scriptTitle').addEventListener('input', function() {
+            const header3 = generateHeader3(this.value);
+            document.getElementById('scriptHeader3').value = header3;
+            document.getElementById('header3CharCount').textContent = header3.length;
         });
-        document.getElementById('status').textContent = res.ok ? 'Script saved!' : `Error: ${res.status} ${await res.text()}`;
-      } catch (err) {
-        document.getElementById('status').textContent = `Save error: ${err.message}`;
-      }
-    }
 
-    // Run loadScript after a slight delay to ensure localStorage is ready
-    setTimeout(loadScript, 100);
-  </script>
+        document.getElementById('scriptHeader2').addEventListener('input', function() {
+            document.getElementById('header2CharCount').textContent = this.value.length;
+        });
+
+        document.getElementById('scriptHeader3').addEventListener('input', function() {
+            document.getElementById('header3CharCount').textContent = this.value.length;
+        });
+
+        document.getElementById('scriptContent').addEventListener('input', function() {
+            document.getElementById('contentCharCount').textContent = this.value.length;
+        });
+
+        // Generate 12-digit Header 2
+        function generateHeader2() {
+            const chars = '0123456789';
+            let id = '';
+            for (let i = 0; i < 12; i++) {
+                id += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('scriptHeader2').value = id;
+            document.getElementById('header2CharCount').textContent = id.length;
+        }
+
+        // Generate Header 3 from title
+        function generateHeader3(title) {
+            return title
+                .toLowerCase()
+                .replace(/\s+/g, '')
+                .slice(0, 100);
+        }
+
+        // Modal functions
+        function showModal(id) {
+            const modal = document.getElementById(id);
+            const modalContent = modal.querySelector('.modal');
+            modal.style.display = 'flex';
+            modal.classList.remove('disappear');
+            modal.classList.add('appear');
+            modalContent.classList.remove('disappear');
+            modalContent.classList.add('appear');
+            requestAnimationFrame(() => {
+                modal.style.background = 'rgba(0, 0, 0, 0.5)';
+                modalContent.style.opacity = '1';
+            });
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            const modalContent = modal.querySelector('.modal');
+            modal.classList.remove('appear');
+            modal.classList.add('disappear');
+            modalContent.classList.remove('appear');
+            modalContent.classList.add('disappear');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modal.style.background = 'rgba(0, 0, 0, 0)';
+                modal.classList.remove('disappear');
+                modalContent.classList.remove('disappear');
+            }, 400);
+        }
+
+        async function showCreateModal() {
+            const auth = await checkAuth();
+            if (!auth) return;
+
+            currentScriptKey = null;
+            document.getElementById('modalTitle').textContent = 'Create New Script';
+            document.getElementById('scriptTitle').value = '';
+            document.getElementById('scriptHeader1').value = 'script';
+            document.getElementById('scriptHeader2').value = '';
+            document.getElementById('scriptHeader3').value = '';
+            document.getElementById('scriptContent').value = '';
+            document.getElementById('scriptObfuscate').checked = false;
+            document.getElementById('header2CharCount').textContent = '0';
+            document.getElementById('header3CharCount').textContent = '0';
+            document.getElementById('contentCharCount').textContent = '0';
+            generateHeader2();
+            showModal('scriptModal');
+        }
+
+        async function showEditModal(key) {
+            const auth = await checkAuth();
+            if (!auth) return;
+
+            const script = scripts.find(s => s.key === key);
+            if (!script) return;
+
+            currentScriptKey = key;
+            document.getElementById('modalTitle').textContent = 'Edit Script';
+            document.getElementById('scriptTitle').value = script.title;
+            document.getElementById('scriptHeader1').value = 'script';
+            document.getElementById('scriptHeader2').value = key.slice(0, 12);
+            document.getElementById('scriptHeader3').value = key.slice(13);
+            document.getElementById('header2CharCount').textContent = key.slice(0, 12).length;
+            document.getElementById('header3CharCount').textContent = key.slice(13).length;
+
+            try {
+                const res = await fetch(`/api/script.lua?key=${encodeURIComponent(key)}`, {
+                    headers: { 'Authorization': `Basic ${auth}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('scriptContent').value = data.content;
+                    document.getElementById('scriptObfuscate').checked = data.obfuscate;
+                    document.getElementById('contentCharCount').textContent = data.content.length;
+                    showModal('scriptModal');
+                } else {
+                    alert(`Error: ${res.status} ${await res.text()}`);
+                    setTimeout(() => window.location.href = '/login.html', 2000);
+                }
+            } catch (err) {
+                alert(`Fetch error: ${err.message}`);
+                setTimeout(() => window.location.href = '/login.html', 2000);
+            }
+        }
+
+        async function showDeleteModal(key) {
+            const auth = await checkAuth();
+            if (!auth) return;
+
+            const script = scripts.find(s => s.key === key);
+            if (!script) return;
+
+            currentScriptKey = key;
+            document.getElementById('deleteScriptName').textContent = script.title;
+            showModal('deleteModal');
+        }
+
+        async function loadScripts() {
+            const auth = await checkAuth();
+            if (!auth) return;
+
+            document.getElementById('scriptList').innerHTML = '<p style="text-align: center; padding: 30px; color: var(--text-light)">Loading scripts...</p>';
+
+            try {
+                const res = await fetch('/api/script.lua', {
+                    headers: { 'Authorization': `Basic ${auth}` }
+                });
+                if (res.ok) {
+                    scripts = await res.json();
+                    renderScripts();
+                } else {
+                    alert(`Error: ${res.status} ${await res.text()}`);
+                    setTimeout(() => window.location.href = '/login.html', 2000);
+                }
+            } catch (err) {
+                alert(`Fetch error: ${err.message}`);
+                setTimeout(() => window.location.href = '/login.html', 2000);
+            }
+        }
+
+        function renderScripts() {
+            const scriptList = document.getElementById('scriptList');
+
+            if (scripts.length === 0) {
+                scriptList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-code"></i>
+                        <p>No scripts found. Create your first script to get started.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            scriptList.innerHTML = '';
+
+            scripts.forEach(script => {
+                const item = document.createElement('div');
+                item.className = 'script-item';
+                item.innerHTML = `
+                    <div class="script-info">
+                        <div class="script-title">${script.title}</div>
+                        <div class="script-key">Key: ${script.key}</div>
+                    </div>
+                    <div class="script-actions">
+                        <button class="action-btn btn-secondary" onclick="copyScript('${script.key}')">
+                            <i class="fas fa-copy"></i> Copy Script
+                        </button>
+                        <button class="action-btn btn-primary" onclick="showEditModal('${script.key}')">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="action-btn btn-danger" onclick="showDeleteModal('${script.key}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                `;
+                scriptList.appendChild(item);
+            });
+        }
+
+        async function saveScript() {
+            const auth = await checkAuth();
+            if (!auth) return;
+
+            const title = document.getElementById('scriptTitle').value.trim();
+            const header2 = document.getElementById('scriptHeader2').value.trim();
+            const header3 = document.getElementById('scriptHeader3').value.trim();
+            const content = document.getElementById('scriptContent').value;
+            const obfuscate = document.getElementById('scriptObfuscate').checked;
+
+            if (!title || !header2 || !header3 || !content) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            if (header2.length !== 12 || !/^\d+$/.test(header2)) {
+                alert('Header 2 must be exactly 12 digits');
+                return;
+            }
+
+            if (header3.length > 100) {
+                alert('Header 3 must be 100 characters or less');
+                return;
+            }
+
+            if (content.length > 200000) {
+                alert('Script content must be 200,000 characters or less');
+                return;
+            }
+
+            const key = `${header2}-${header3}`;
+            const btn = document.getElementById('saveScriptBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/script.lua', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Basic ${auth}`
+                    },
+                    body: JSON.stringify({ key, title, content, obfuscate })
+                });
+                if (res.ok) {
+                    closeModal('scriptModal');
+                    await loadScripts();
+                    alert(`Script "${title}" has been ${currentScriptKey ? 'updated' : 'created'} successfully!`);
+                } else {
+                    alert(`Error: ${res.status} ${await res.text()}`);
+                }
+            } catch (err) {
+                alert(`Save error: ${err.message}`);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function confirmDelete() {
+            const auth = await checkAuth();
+            if (!auth) return;
+
+            if (!currentScriptKey) return;
+
+            try {
+                const res = await fetch(`/api/script.lua?key=${encodeURIComponent(currentScriptKey)}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Basic ${auth}` }
+                });
+                if (res.ok) {
+                    closeModal('deleteModal');
+                    await loadScripts();
+                    alert('Script has been deleted successfully!');
+                } else {
+                    alert(`Error: ${res.status} ${await res.text()}`);
+                }
+            } catch (err) {
+                alert(`Delete error: ${err.message}`);
+            }
+        }
+
+        function copyScript(key) {
+            const [header2, header3] = key.split('-');
+            const luaScript = `local http = game:GetService("HttpService")
+local headers = {
+    ["Header 1"] = "script",
+    ["Header 2"] = "${header2}",
+    ["Header 3"] = "${header3}"
+}
+local response = http:GetAsync("${window.location.origin}/api/script.lua", true, headers)
+loadstring(response)()`;
+
+            navigator.clipboard.writeText(luaScript)
+                .then(() => alert('Lua script copied to clipboard!'))
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    alert('Failed to copy script');
+                });
+        }
+
+        // Load scripts after checking auth
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(loadScripts, 100);
+        });
+    </script>
 </body>
 </html>
