@@ -147,24 +147,6 @@
             background: rgba(0, 0, 128, 0.2);
         }
 
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: var(--success-dark);
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: var(--danger-dark);
-        }
-
         .script-list {
             margin-top: 20px;
             max-height: 50vh;
@@ -518,9 +500,6 @@
             <button class="btn btn-secondary" onclick="loadScripts()">
                 <i class="fas fa-sync-alt"></i> Refresh List
             </button>
-            <button class="btn btn-success" onclick="debugTest()">
-                <i class="fas fa-bug"></i> Debug Test
-            </button>
         </div>
 
         <div class="script-list" id="scriptList">
@@ -547,23 +526,12 @@
             </div>
 
             <div class="form-group">
-                <label for="scriptHeader1">Header 1</label>
-                <input type="text" id="scriptHeader1" value="script" disabled>
-            </div>
-
-            <div class="form-group">
-                <label for="scriptHeader2">Header 2 (12 digits)</label>
-                <input type="text" id="scriptHeader2" maxlength="12" placeholder="Enter or generate 12-digit ID">
-                <button class="btn btn-secondary" style="margin-top: 10px; width: auto;" onclick="generateHeader2()">
+                <label for="scriptId">Script ID (12 digits)</label>
+                <input type="text" id="scriptId" maxlength="12" placeholder="Enter or generate 12-digit ID">
+                <button class="btn btn-secondary" style="margin-top: 10px; width: auto;" onclick="generateScriptId()">
                     <i class="fas fa-redo"></i> Regenerate
                 </button>
-                <div class="char-count"><span id="header2CharCount">0</span>/12 characters</div>
-            </div>
-
-            <div class="form-group">
-                <label for="scriptHeader3">Header 3</label>
-                <input type="text" id="scriptHeader3" placeholder="Script title (lowercase, no spaces)">
-                <div class="char-count"><span id="header3CharCount">0</span>/100 characters</div>
+                <div class="char-count"><span id="scriptIdCharCount">0</span>/12 characters</div>
             </div>
 
             <div class="form-group">
@@ -610,15 +578,8 @@
     </div>
 
     <script>
-        // Debug function to test JavaScript execution
-        function debugTest() {
-            console.log('Debug Test button clicked');
-            alert('Debug Test: JavaScript is running. Check the console (F12) for errors.');
-        }
-
         let scripts = [];
         let currentScriptKey = null;
-        const SECRET_KEY = 'YOUR_SECRET_KEY_HERE'; // Replace with your actual SECRET_KEY
 
         // Browser compatibility check
         function checkBrowserCompatibility() {
@@ -713,30 +674,24 @@
                 currentScriptKey = null;
                 const modalTitle = document.getElementById('modalTitle');
                 const scriptTitle = document.getElementById('scriptTitle');
-                const scriptHeader1 = document.getElementById('scriptHeader1');
-                const scriptHeader2 = document.getElementById('scriptHeader2');
-                const scriptHeader3 = document.getElementById('scriptHeader3');
+                const scriptId = document.getElementById('scriptId');
                 const scriptContent = document.getElementById('scriptContent');
                 const scriptObfuscate = document.getElementById('scriptObfuscate');
-                const header2CharCount = document.getElementById('header2CharCount');
-                const header3CharCount = document.getElementById('header3CharCount');
+                const scriptIdCharCount = document.getElementById('scriptIdCharCount');
                 const contentCharCount = document.getElementById('contentCharCount');
 
-                if (!modalTitle || !scriptTitle || !scriptHeader1 || !scriptHeader2 || !scriptHeader3 || !scriptContent || !scriptObfuscate || !header2CharCount || !header3CharCount || !contentCharCount) {
+                if (!modalTitle || !scriptTitle || !scriptId || !scriptContent || !scriptObfuscate || !scriptIdCharCount || !contentCharCount) {
                     throw new Error('One or more form elements not found');
                 }
 
                 modalTitle.textContent = 'Create New Script';
                 scriptTitle.value = '';
-                scriptHeader1.value = 'script';
-                scriptHeader2.value = '';
-                scriptHeader3.value = '';
+                scriptId.value = '';
                 scriptContent.value = '';
                 scriptObfuscate.checked = false;
-                header2CharCount.textContent = '0';
-                header3CharCount.textContent = '0';
+                scriptIdCharCount.textContent = '0';
                 contentCharCount.textContent = '0';
-                generateHeader2();
+                generateScriptId();
                 showModal('scriptModal');
             } catch (err) {
                 console.error('Error in showCreateModal:', err);
@@ -755,26 +710,20 @@
                 currentScriptKey = key;
                 const modalTitle = document.getElementById('modalTitle');
                 const scriptTitle = document.getElementById('scriptTitle');
-                const scriptHeader1 = document.getElementById('scriptHeader1');
-                const scriptHeader2 = document.getElementById('scriptHeader2');
-                const scriptHeader3 = document.getElementById('scriptHeader3');
-                const header2CharCount = document.getElementById('header2CharCount');
-                const header3CharCount = document.getElementById('header3CharCount');
+                const scriptId = document.getElementById('scriptId');
+                const scriptIdCharCount = document.getElementById('scriptIdCharCount');
                 const scriptContent = document.getElementById('scriptContent');
                 const scriptObfuscate = document.getElementById('scriptObfuscate');
                 const contentCharCount = document.getElementById('contentCharCount');
 
-                if (!modalTitle || !scriptTitle || !scriptHeader1 || !scriptHeader2 || !scriptHeader3 || !header2CharCount || !header3CharCount || !scriptContent || !scriptObfuscate || !contentCharCount) {
+                if (!modalTitle || !scriptTitle || !scriptId || !scriptIdCharCount || !scriptContent || !scriptObfuscate || !contentCharCount) {
                     throw new Error('One or more form elements not found');
                 }
 
                 modalTitle.textContent = 'Edit Script';
                 scriptTitle.value = script.title;
-                scriptHeader1.value = 'script';
-                scriptHeader2.value = key.slice(0, 12);
-                scriptHeader3.value = key.slice(13);
-                header2CharCount.textContent = key.slice(0, 12).length;
-                header3CharCount.textContent = key.slice(13).length;
+                scriptId.value = key;
+                scriptIdCharCount.textContent = key.length;
 
                 const res = await fetch(`/api/script.lua?key=${encodeURIComponent(key)}`, {
                     headers: { 'Authorization': `Basic ${auth}` }
@@ -926,23 +875,17 @@
                 if (!auth) return;
 
                 const title = document.getElementById('scriptTitle').value.trim();
-                const header2 = document.getElementById('scriptHeader2').value.trim();
-                const header3 = document.getElementById('scriptHeader3').value.trim();
+                const scriptId = document.getElementById('scriptId').value.trim();
                 const content = document.getElementById('scriptContent').value;
                 const obfuscate = document.getElementById('scriptObfuscate').checked;
 
-                if (!title || !header2 || !header3 || !content) {
+                if (!title || !scriptId || !content) {
                     alert('Please fill in all fields');
                     return;
                 }
 
-                if (header2.length !== 12 || !/^\d+$/.test(header2)) {
-                    alert('Header 2 must be exactly 12 digits');
-                    return;
-                }
-
-                if (header3.length > 100) {
-                    alert('Header 3 must be 100 characters or less');
+                if (scriptId.length !== 12 || !/^\d+$/.test(scriptId)) {
+                    alert('Script ID must be exactly 12 digits');
                     return;
                 }
 
@@ -951,7 +894,6 @@
                     return;
                 }
 
-                const key = `${header2}-${header3}`;
                 const btn = document.getElementById('saveScriptBtn');
                 if (!btn) throw new Error('Save script button not found');
 
@@ -965,7 +907,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Basic ${auth}`
                     },
-                    body: JSON.stringify({ key, title, content, obfuscate })
+                    body: JSON.stringify({ key: scriptId, title, content, obfuscate })
                 });
                 if (res.ok) {
                     closeModal('scriptModal');
@@ -1020,12 +962,7 @@
 
         function copyScript(key) {
             try {
-                const [header2, header3] = key.split('-');
-                const luaScript = `local response = game:HttpGet('https://rawscriptserver.vercel.app/?key=${SECRET_KEY}', true, {
-    ["Header-1"] = "script",
-    ["Header-2"] = "${header2}",
-    ["Header-3"] = "${header3}"
-})
+                const luaScript = `local response = game:HttpGet('https://rawscriptserver.vercel.app/scripts/${key}')
 loadstring(response)()`;
 
                 navigator.clipboard.writeText(luaScript)
@@ -1043,35 +980,22 @@ loadstring(response)()`;
             }
         }
 
-        function generateHeader2() {
+        function generateScriptId() {
             try {
                 const chars = '0123456789';
                 let id = '';
                 for (let i = 0; i < 12; i++) {
                     id += chars.charAt(Math.floor(Math.random() * chars.length));
                 }
-                const scriptHeader2 = document.getElementById('scriptHeader2');
-                const header2CharCount = document.getElementById('header2CharCount');
-                if (!scriptHeader2 || !header2CharCount) throw new Error('Header 2 elements not found');
-                scriptHeader2.value = id;
-                header2CharCount.textContent = id.length;
-                console.log('Generated Header 2:', id);
+                const scriptId = document.getElementById('scriptId');
+                const scriptIdCharCount = document.getElementById('scriptIdCharCount');
+                if (!scriptId || !scriptIdCharCount) throw new Error('Script ID elements not found');
+                scriptId.value = id;
+                scriptIdCharCount.textContent = id.length;
+                console.log('Generated Script ID:', id);
             } catch (err) {
-                console.error('Error in generateHeader2:', err);
-                alert('Generate Header 2 error: ' + err.message);
-            }
-        }
-
-        function generateHeader3(title) {
-            try {
-                return title
-                    .toLowerCase()
-                    .replace(/\s+/g, '')
-                    .slice(0, 100);
-            } catch (err) {
-                console.error('Error in generateHeader3:', err);
-                alert('Generate Header 3 error: ' + err.message);
-                return '';
+                console.error('Error in generateScriptId:', err);
+                alert('Generate Script ID error: ' + err.message);
             }
         }
 
@@ -1093,50 +1017,22 @@ loadstring(response)()`;
                 checkBrowserCompatibility();
 
                 const scriptTitle = document.getElementById('scriptTitle');
-                const scriptHeader2 = document.getElementById('scriptHeader2');
-                const scriptHeader3 = document.getElementById('scriptHeader3');
+                const scriptId = document.getElementById('scriptId');
                 const scriptContent = document.getElementById('scriptContent');
 
-                if (!scriptTitle || !scriptHeader2 || !scriptHeader3 || !scriptContent) {
+                if (!scriptTitle || !scriptId || !scriptContent) {
                     throw new Error('One or more form elements not found');
                 }
 
-                scriptTitle.addEventListener('input', function() {
+                scriptId.addEventListener('input', function() {
                     try {
-                        const header3 = generateHeader3(this.value);
-                        const scriptHeader3 = document.getElementById('scriptHeader3');
-                        const header3CharCount = document.getElementById('header3CharCount');
-                        if (!scriptHeader3 || !header3CharCount) throw new Error('Header 3 elements not found');
-                        scriptHeader3.value = header3;
-                        header3CharCount.textContent = header3.length;
-                        console.log('Updated Header 3:', header3);
+                        const scriptIdCharCount = document.getElementById('scriptIdCharCount');
+                        if (!scriptIdCharCount) throw new Error('Script ID char count element not found');
+                        scriptIdCharCount.textContent = this.value.length;
+                        console.log('Updated Script ID char count:', this.value.length);
                     } catch (err) {
-                        console.error('Error in scriptTitle input listener:', err);
-                        alert('Title input error: ' + err.message);
-                    }
-                });
-
-                scriptHeader2.addEventListener('input', function() {
-                    try {
-                        const header2CharCount = document.getElementById('header2CharCount');
-                        if (!header2CharCount) throw new Error('Header 2 char count element not found');
-                        header2CharCount.textContent = this.value.length;
-                        console.log('Updated Header 2 char count:', this.value.length);
-                    } catch (err) {
-                        console.error('Error in scriptHeader2 input listener:', err);
-                        alert('Header 2 input error: ' + err.message);
-                    }
-                });
-
-                scriptHeader3.addEventListener('input', function() {
-                    try {
-                        const header3CharCount = document.getElementById('header3CharCount');
-                        if (!header3CharCount) throw new Error('Header 3 char count element not found');
-                        header3CharCount.textContent = this.value.length;
-                        console.log('Updated Header 3 char count:', this.value.length);
-                    } catch (err) {
-                        console.error('Error in scriptHeader3 input listener:', err);
-                        alert('Header 3 input error: ' + err.message);
+                        console.error('Error in scriptId input listener:', err);
+                        alert('Script ID input error: ' + err.message);
                     }
                 });
 
