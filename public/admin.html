@@ -43,6 +43,16 @@
             overflow-x: hidden;
         }
 
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-size: 1.5rem;
+            color: var(--text-light);
+            text-align: center;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -54,7 +64,8 @@
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             border: 1px solid var(--border-light);
-            text-align: center; /* Ensure centering */
+            text-align: center;
+            display: none; /* Hidden until auth is verified */
         }
 
         header {
@@ -68,7 +79,7 @@
             font-weight: 700;
             background: linear-gradient(135deg, #fff, #e6e6e6);
             -webkit-background-clip: text;
-            color: transparent; /* Fallback for non-Webkit browsers */
+            color: transparent;
             margin-bottom: 10px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
@@ -84,7 +95,7 @@
             justify-content: center;
             gap: 15px;
             margin-bottom: 30px;
-            flex-wrap: wrap; /* Prevent overflow */
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -100,7 +111,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             background: var(--bg-blur);
-            background: var(--bg-blur-fallback); /* Fallback */
+            background: var(--bg-blur-fallback);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
             color: var(--text);
@@ -127,7 +138,7 @@
 
         .btn-secondary {
             background: var(--bg-blur);
-            background: var(--bg-blur-fallback); /* Fallback */
+            background: var(--bg-blur-fallback);
             color: var(--text);
             border: 1px solid var(--border-light);
         }
@@ -161,7 +172,7 @@
             border-radius: 12px;
             padding: 15px;
             background: var(--card-bg);
-            background: var(--card-bg-fallback); /* Fallback */
+            background: var(--card-bg-fallback);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid var(--border-light);
@@ -191,7 +202,7 @@
             border-radius: 10px;
             margin-bottom: 10px;
             background: var(--card-bg);
-            background: var(--card-bg-fallback); /* Fallback */
+            background: var(--card-bg-fallback);
         }
 
         .script-item:hover {
@@ -238,7 +249,7 @@
             gap: 5px;
             transition: all 0.2s ease;
             background: var(--bg-blur);
-            background: var(--bg-blur-fallback); /* Fallback */
+            background: var(--bg-blur-fallback);
             color: var(--text);
             border: 1px solid var(--border-light);
         }
@@ -292,7 +303,7 @@
 
         .modal {
             background: var(--bg-blur);
-            background: var(--bg-blur-fallback); /* Fallback */
+            background: var(--bg-blur-fallback);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 20px;
@@ -382,7 +393,7 @@
             padding: 15px;
             font-size: 1rem;
             background: var(--card-bg);
-            background: var(--card-bg-fallback); /* Fallback */
+            background: var(--card-bg-fallback);
             border: 1px solid var(--border-light);
             border-radius: 10px;
             color: var(--text);
@@ -438,7 +449,7 @@
             font-weight: 700;
             color: var(--text);
             background: var(--card-bg);
-            background: var(--card-bg-fallback); /* Fallback */
+            background: var(--card-bg-fallback);
             padding: 10px 15px;
             border-radius: 8px;
             margin: 15px 0;
@@ -491,7 +502,10 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="loading" id="loading">
+        <i class="fas fa-spinner fa-spin"></i> Checking authentication...
+    </div>
+    <div class="container" id="dashboard">
         <header>
             <h1>Script Dashboard</h1>
             <p class="subtitle">Manage your scripts with style</p>
@@ -619,20 +633,28 @@
             }
         }
 
-        // Check auth on load
+        // Check auth and control page rendering
         async function checkAuth() {
             try {
                 const auth = localStorage.getItem('auth');
                 if (!auth) {
                     console.error('No auth token found');
-                    alert('No auth token found');
-                    setTimeout(() => window.location.href = '/login.html', 1000);
+                    window.location.href = '/login.html';
+                    return false;
+                }
+                // Verify auth token with server
+                const res = await fetch('/api/script.lua', {
+                    headers: { 'Authorization': `Basic ${auth}` }
+                });
+                if (!res.ok) {
+                    console.error(`Auth verification failed: ${res.status} ${await res.text()}`);
+                    window.location.href = '/login.html';
                     return false;
                 }
                 return auth;
             } catch (err) {
                 console.error('Error in checkAuth:', err);
-                alert('Auth error: ' + err.message);
+                window.location.href = '/login.html';
                 return false;
             }
         }
@@ -738,8 +760,11 @@
                 const scriptHeader3 = document.getElementById('scriptHeader3');
                 const header2CharCount = document.getElementById('header2CharCount');
                 const header3CharCount = document.getElementById('header3CharCount');
+                const scriptContent = document.getElementById('scriptContent');
+                const scriptObfuscate = document.getElementById('scriptObfuscate');
+                const contentCharCount = document.getElementById('contentCharCount');
 
-                if (!modalTitle || !scriptTitle || !scriptHeader1 || !scriptHeader2 || !scriptHeader3 || !header2CharCount || !header3CharCount) {
+                if (!modalTitle || !scriptTitle || !scriptHeader1 || !scriptHeader2 || !scriptHeader3 || !header2CharCount || !header3CharCount || !scriptContent || !scriptObfuscate || !contentCharCount) {
                     throw new Error('One or more form elements not found');
                 }
 
@@ -756,22 +781,21 @@
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    const scriptContent = document.getElementById('scriptContent');
-                    const scriptObfuscate = document.getElementById('scriptObfuscate');
-                    const contentCharCount = document.getElementById('contentCharCount');
-
-                    if (!scriptContent || !scriptObfuscate || !contentCharCount) {
-                        throw new Error('Script content elements not found');
+                    console.log('Fetched script data:', data); // Debug response
+                    if (!data || typeof data.content !== 'string' || typeof data.obfuscate !== 'boolean') {
+                        throw new Error('Invalid response format: content or obfuscate missing');
                     }
-
-                    scriptContent.value = data.content;
-                    scriptObfuscate.checked = data.obfuscate;
-                    contentCharCount.textContent = data.content.length;
+                    scriptContent.value = data.content || '';
+                    scriptObfuscate.checked = data.obfuscate || false;
+                    contentCharCount.textContent = (data.content || '').length;
                     showModal('scriptModal');
                 } else {
-                    console.error(`Fetch error: ${res.status} ${await res.text()}`);
-                    alert(`Error: ${res.status} ${await res.text()}`);
-                    setTimeout(() => window.location.href = '/login.html', 2000);
+                    const errorText = await res.text();
+                    console.error(`Fetch error: ${res.status} ${errorText}`);
+                    alert(`Error fetching script: ${res.status} ${errorText}`);
+                    if (res.status === 401 || res.status === 403) {
+                        window.location.href = '/login.html';
+                    }
                 }
             } catch (err) {
                 console.error('Error in showEditModal:', err);
@@ -818,7 +842,9 @@
                 } else {
                     console.error(`Fetch error: ${res.status} ${await res.text()}`);
                     alert(`Error: ${res.status} ${await res.text()}`);
-                    setTimeout(() => window.location.href = '/login.html', 2000);
+                    if (res.status === 401 || res.status === 403) {
+                        window.location.href = '/login.html';
+                    }
                 }
             } catch (err) {
                 console.error('Error in loadScripts:', err);
@@ -926,6 +952,9 @@
                 } else {
                     console.error(`Save error: ${res.status} ${await res.text()}`);
                     alert(`Error: ${res.status} ${await res.text()}`);
+                    if (res.status === 401 || res.status === 403) {
+                        window.location.href = '/login.html';
+                    }
                 }
             } catch (err) {
                 console.error('Error in saveScript:', err);
@@ -957,6 +986,9 @@
                 } else {
                     console.error(`Delete error: ${res.status} ${await res.text()}`);
                     alert(`Error: ${res.status} ${await res.text()}`);
+                    if (res.status === 401 || res.status === 403) {
+                        window.location.href = '/login.html';
+                    }
                 }
             } catch (err) {
                 console.error('Error in confirmDelete:', err);
@@ -991,7 +1023,6 @@ loadstring(response)()`;
             }
         }
 
-        // Generate 12-digit Header 2
         function generateHeader2() {
             try {
                 const chars = '0123456789';
@@ -1011,7 +1042,6 @@ loadstring(response)()`;
             }
         }
 
-        // Generate Header 3 from title
         function generateHeader3(title) {
             try {
                 return title
@@ -1025,9 +1055,23 @@ loadstring(response)()`;
             }
         }
 
-        // Initialize event listeners and load scripts
-        document.addEventListener('DOMContentLoaded', () => {
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
             try {
+                const loading = document.getElementById('loading');
+                const dashboard = document.getElementById('dashboard');
+                if (!loading || !dashboard) {
+                    throw new Error('Loading or dashboard elements not found');
+                }
+
+                // Check auth before rendering
+                const auth = await checkAuth();
+                if (!auth) return;
+
+                // Hide loading and show dashboard
+                loading.style.display = 'none';
+                dashboard.style.display = 'block';
+
                 checkBrowserCompatibility();
 
                 // Set up event listeners
@@ -1092,11 +1136,11 @@ loadstring(response)()`;
                 });
 
                 // Load scripts
-                loadScripts();
+                await loadScripts();
                 console.log('DOM fully loaded and event listeners set up');
             } catch (err) {
                 console.error('Error in DOMContentLoaded:', err);
-                alert('Initialization error: ' + err.message);
+                window.location.href = '/login.html';
             }
         });
     </script>
