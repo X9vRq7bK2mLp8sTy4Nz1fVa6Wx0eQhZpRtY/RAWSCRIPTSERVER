@@ -28,8 +28,8 @@ async function getAllScripts() {
     return scripts.map(doc => ({
       key: doc._id,
       title: doc.title || 'Untitled',
-      content: doc.content || '',
-      obfuscate: doc.obfuscate || false
+      content: typeof doc.content === 'string' ? doc.content : '',
+      obfuscate: typeof doc.obfuscate === 'boolean' ? doc.obfuscate : false
     }));
   } catch (err) {
     console.error('MongoDB get all scripts error:', err.message);
@@ -41,10 +41,14 @@ async function getScriptByKey(key) {
   try {
     const collection = await connectToDB();
     const doc = await collection.findOne({ _id: key });
+    console.log(`MongoDB query for key ${key}:`, doc); // Debug document
     if (!doc) {
+      console.error(`Script not found for key: ${key}`);
       throw new Error('Script not found');
     }
-    console.log('MongoDB document:', doc); // Debug document
+    if (typeof doc.content !== 'string' || !doc.content) {
+      console.warn(`Invalid or empty content for key ${key}, defaulting to empty string`);
+    }
     return {
       content: typeof doc.content === 'string' ? doc.content : '',
       obfuscate: typeof doc.obfuscate === 'boolean' ? doc.obfuscate : false
@@ -63,6 +67,7 @@ async function saveScript(key, title, content, obfuscate) {
       { $set: { title, content, obfuscate } },
       { upsert: true }
     );
+    console.log(`Saved script: ${key}`);
   } catch (err) {
     console.error('MongoDB save error:', err.message);
     throw new Error(`Failed to save script: ${err.message}`);
@@ -76,6 +81,7 @@ async function deleteScript(key) {
     if (result.deletedCount === 0) {
       throw new Error('Script not found');
     }
+    console.log(`Deleted script: ${key}`);
   } catch (err) {
     console.error('MongoDB delete error:', err.message);
     throw new Error(`Failed to delete script: ${err.message}`);
@@ -91,6 +97,7 @@ export default async function handler(req, res) {
   const expectedKey = process.env.SECRET_KEY;
   const authHeader = req.headers.authorization;
   const expectedAuth = `Basic ${Buffer.from(`${process.env.ADMIN_USERNAME}:${process.env.ADMIN_PASSWORD}`).toString('base64')}`;
+  const isRootPath = req.url === '/' || req.url.startsWith('/?');
 
   try {
     // Admin: Get all scripts
@@ -100,10 +107,18 @@ export default async function handler(req, res) {
       return res.status(200).json(scripts);
     }
 
+    // Admin: Get specific script by key (for edit modal)
+    if (req.method === 'GET' && req.query.key && authHeader === expectedAuth) {
+      const { content, obfuscate } = await getScriptByKey(req.query.key);
+      console.log(`Served script for edit: ${req.query.key}`);
+      return res.status(200).json({ content, obfuscate });
+    }
+
     // Admin: Save script
     if (req.method === 'POST' && authHeader === expectedAuth) {
       const { key, title, content, obfuscate } = req.body;
       if (!key || !title || !content) {
+        console.log('Blocked - missing required fields');
         return res.status(400).json({ error: 'Missing required fields' });
       }
       await saveScript(key, title, content, obfuscate);
@@ -118,7 +133,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ message: 'Script deleted' });
     }
 
-    // Public: Get specific script by headers (for both /api/script.lua and /)
+    // Public: Get specific script by headers (for / or /api/script.lua)
     if (req.method === 'GET' && req.headers['header-1'] === 'script') {
       const header2 = req.headers['header-2'];
       const header3 = req.headers['header-3'];
@@ -134,19 +149,26 @@ export default async function handler(req, res) {
       const { content, obfuscate } = await getScriptByKey(key);
       const output = obfuscate ? simpleObfuscate(content) : content;
       res.setHeader('Content-Type', 'text/plain');
-      console.log(`Served script: ${key}`);
+      console.log(`Served raw script: ${key} (obfuscated: ${obfuscate})`);
       return res.status(200).send(output);
     }
 
+    // Fallback for invalid admin credentials
     if (authHeader && authHeader !== expectedAuth) {
       console.log('Blocked - invalid admin credentials');
       return res.status(401).send('Invalid admin credentials');
     }
 
+    // Fallback for invalid requests
     console.log('Blocked - invalid request');
     return res.status(400).send('Invalid request');
   } catch (err) {
     console.error('Handler error:', err.message);
+    // For public script requests, return plain text error to avoid HTML fallback
+    if (req.method === 'GET' && req.headers['header-1'] === 'script') {
+      res.setHeader('Content-Type', 'text/plain');
+      return res.status(500).send(`Server error: ${err.message}`);
+    }
     return res.status(500).json({ error: `Server error: ${err.message}` });
   }
 }
