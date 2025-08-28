@@ -34,10 +34,27 @@
             padding: 20px;
             overflow-x: hidden;
             padding-top: 220px;
-            /* **FIX:** Robust full-page background to prevent overscroll issues */
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             background-attachment: fixed;
+            
+            /* **NEW:** Entrance animation for the entire page */
+            opacity: 0;
+            transform: scale(1.05); /* Start slightly larger */
+            animation: fadeInZoomIn 0.5s 0.2s ease-out forwards; /* Added 0.2s delay for smoothness */
         }
+
+        /* **NEW:** Keyframes for the entrance animation */
+        @keyframes fadeInZoomIn {
+            from {
+                opacity: 0;
+                transform: scale(1.05);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
         .loading { display: flex; justify-content: center; align-items: center; min-height: 100vh; font-size: 1.5rem; color: var(--text-light); text-align: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; }
         .sticky-header { position: fixed; top: 20px; left: 20px; right: 20px; z-index: 100; padding: 20px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); border: 1px solid var(--border-light); background: var(--bg-blur); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); display: flex; flex-direction: column; gap: 20px; }
         .header-top { display: flex; justify-content: space-between; align-items: center; }
@@ -235,31 +252,6 @@
             const showDeleteModal = (key) => { const script = scripts.find(s => s.key === key); if (!script) return; currentScriptKey = key; getEl('#deleteScriptName').textContent = script.title; showModal('deleteModal'); };
             const updateCharCounts = () => { getEl('#scriptIdCharCount').textContent = getEl('#scriptId').value.length; getEl('#contentCharCount').textContent = getEl('#scriptContent').value.length; };
             const generateScriptId = () => { getEl('#scriptId').value = Array.from({ length: 12 }, () => Math.floor(Math.random() * 10)).join(''); updateCharCounts(); };
-
-            // --- PROMPTS FOR ROBLOX SCRIPT & BACKEND LOGIC ---
-            //
-            // To make the 'Players' tab functional, the following components are needed:
-            //
-            // 1. BACKEND API ENDPOINT (e.g., create a new file /api/players.lua)
-            //    - It needs to handle GET requests to fetch player lists for the dashboard.
-            //    - It needs to handle POST requests from the Roblox game server (heartbeats).
-            //    - It should interact with a MongoDB collection (e.g., 'players').
-            //    - A player document should contain fields like: `userId`, `displayName`, `username`, `lastSeen` (timestamp), and `status` ('active' or 'inactive').
-            //    - The backend should automatically change a player's status from 'active' to 'inactive' if a heartbeat hasn't been received in over 5 minutes.
-            //
-            // 2. ROBLOX LUA SCRIPT (To run in the game server)
-            //    - Use HttpService to communicate with your backend.
-            //    - When a player joins (`Players.PlayerAdded`), send a POST request to your API with the player's info (UserId, DisplayName, Name).
-            //    - In a server-side loop (e.g., `while task.wait(60) do`), iterate through all players in `game.Players:GetPlayers()`.
-            //    - For each player, send a POST request (a "heartbeat") to the API to update their `lastSeen` timestamp and confirm they are still active.
-            //
-            // 3. FRONTEND JAVASCRIPT (To be added below)
-            //    - Create a new `async function loadPlayers()` here in the script.
-            //    - This function should `fetch` data from your '/api/players.lua' endpoint.
-            //    - The endpoint should return JSON like: `{ "activePlayers": [...], "inactivePlayers": [...] }`.
-            //    - The function would then call a new `renderPlayers(data)` function to build the HTML and update the UI.
-            //    - `loadPlayers()` should be called when the 'Players' tab is clicked.
-            //
 
             document.body.addEventListener('click', async (e) => {
                 try {
