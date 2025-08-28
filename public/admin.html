@@ -36,25 +36,14 @@
             padding-top: 220px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             background-attachment: fixed;
-            
-            /* **NEW:** Entrance animation for the entire page */
             opacity: 0;
-            transform: scale(1.05); /* Start slightly larger */
-            animation: fadeInZoomIn 0.5s 0.2s ease-out forwards; /* Added 0.2s delay for smoothness */
+            transform: scale(1.05);
+            animation: fadeInZoomIn 0.5s 0.2s ease-out forwards;
         }
-
-        /* **NEW:** Keyframes for the entrance animation */
         @keyframes fadeInZoomIn {
-            from {
-                opacity: 0;
-                transform: scale(1.05);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+            from { opacity: 0; transform: scale(1.05); }
+            to { opacity: 1; transform: scale(1); }
         }
-
         .loading { display: flex; justify-content: center; align-items: center; min-height: 100vh; font-size: 1.5rem; color: var(--text-light); text-align: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; }
         .sticky-header { position: fixed; top: 20px; left: 20px; right: 20px; z-index: 100; padding: 20px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); border: 1px solid var(--border-light); background: var(--bg-blur); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); display: flex; flex-direction: column; gap: 20px; }
         .header-top { display: flex; justify-content: space-between; align-items: center; }
@@ -86,7 +75,7 @@
         .player-list { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; max-height: 260px; }
         .player-item { display: flex; align-items: center; gap: 15px; background: var(--card-bg); padding: 15px; border-radius: 15px; transition: all 0.3s ease; flex-shrink: 0; }
         .previous-players .player-item { opacity: 0.7; }
-        .player-thumbnail { width: 50px; height: 50px; border-radius: 50%; background-color: var(--primary); flex-shrink: 0; background-image: url('https://via.placeholder.com/50'); background-size: cover; }
+        .player-thumbnail { width: 50px; height: 50px; border-radius: 50%; background-color: var(--primary); flex-shrink: 0; background-size: cover; }
         .player-info { flex-grow: 1; }
         .status-box { font-size: 0.85rem; font-weight: 600; padding: 5px 12px; border-radius: 8px; white-space: nowrap; }
         .status-box.uptime { background-color: var(--success-bg-pastel); color: var(--success-text-bright); }
@@ -157,14 +146,10 @@
         </div>
 
         <div id="players-tab" class="tab-content">
-            <h2 class="section-title">Active Players <span class="status-box player-count">1</span></h2>
-            <div class="player-list active-players">
-                <div class="player-item"><div class="player-thumbnail"></div><div class="player-info"><strong>PlayerOne</strong> (@player1_roblox)</div><div class="status-box uptime">1h 14m</div></div>
-            </div>
-            <h2 class="section-title">Previous Players <span class="status-box player-count">1</span></h2>
-            <div class="player-list previous-players">
-                <div class="player-item"><div class="player-thumbnail" style="background-image: url('https://via.placeholder.com/50/DAF7A6');"></div><div class="player-info"><strong>Admin_User</strong> (@admin_is_cool)</div><div class="status-box last-seen">28 Aug 2025</div></div>
-            </div>
+            <h2 class="section-title">Active Players <span class="status-box player-count" id="activePlayerCount">0</span></h2>
+            <div class="player-list active-players" id="activePlayers"></div>
+            <h2 class="section-title">Previous Players <span class="status-box player-count" id="previousPlayerCount">0</span></h2>
+            <div class="player-list previous-players" id="previousPlayers"></div>
         </div>
         
         <div id="settings-tab" class="tab-content">
@@ -196,15 +181,56 @@
                     return auth;
                 } catch (err) { window.location.href = '/login.html'; return false; }
             };
-            
-            const showModal = (id) => { const modal = getEl(`#${id}`); modal.style.display = 'flex'; requestAnimationFrame(() => { modal.classList.add('appear'); modal.querySelector('.modal').classList.add('appear'); }); };
-            const closeModal = (id) => { const modal = getEl(`#${id}`); const modalContent = modal.querySelector('.modal'); modal.classList.remove('appear'); modalContent.classList.add('disappear'); setTimeout(() => { modal.style.display = 'none'; modalContent.classList.remove('disappear'); modalContent.classList.remove('appear'); }, 400); };
-            const escapeHTML = (str) => { const p = document.createElement('p'); p.textContent = str; return p.innerHTML; };
-            
+
+            const showModal = (id) => { 
+                const modal = getEl(`#${id}`); 
+                modal.style.display = 'flex'; 
+                requestAnimationFrame(() => { 
+                    modal.classList.add('appear'); 
+                    modal.querySelector('.modal').classList.add('appear'); 
+                }); 
+            };
+            const closeModal = (id) => { 
+                const modal = getEl(`#${id}`); 
+                const modalContent = modal.querySelector('.modal'); 
+                modal.classList.remove('appear'); 
+                modalContent.classList.add('disappear'); 
+                setTimeout(() => { 
+                    modal.style.display = 'none'; 
+                    modalContent.classList.remove('disappear'); 
+                    modalContent.classList.remove('appear'); 
+                }, 400); 
+            };
+            const escapeHTML = (str) => { 
+                const p = document.createElement('p'); 
+                p.textContent = str; 
+                return p.innerHTML; 
+            };
+
+            const formatUptime = (firstSeen, lastSeen) => {
+                const diffMs = new Date(lastSeen) - new Date(firstSeen);
+                const hours = Math.floor(diffMs / (1000 * 60 * 60));
+                const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                return `${hours}h ${minutes}m`;
+            };
+
+            const formatLastSeen = (date) => {
+                return new Date(date).toLocaleDateString('en-US', { 
+                    day: 'numeric', 
+                    month: 'short', 
+                    year: 'numeric', 
+                    hour: 'numeric', 
+                    minute: 'numeric' 
+                });
+            };
+
             const renderScripts = () => {
                 const listEl = getEl('#scriptList');
                 if (!listEl) return;
-                if (scripts.length === 0) { listEl.innerHTML = `<div class="empty-state"><i class="fas fa-code"></i><p>No scripts found.</p></div>`; return; }
+                if (scripts.length === 0) { 
+                    listEl.innerHTML = `<div class="empty-state"><i class="fas fa-code"></i><p>No scripts found.</p></div>`; 
+                    return; 
+                }
                 listEl.innerHTML = scripts.map(script => `
                     <div class="script-item">
                         <div class="script-info">
@@ -219,20 +245,93 @@
                     </div>`).join('');
             };
 
+            const renderPlayers = (activePlayers, previousPlayers) => {
+                const activeListEl = getEl('#activePlayers');
+                const previousListEl = getEl('#previousPlayers');
+                const activeCountEl = getEl('#activePlayerCount');
+                const previousCountEl = getEl('#previousPlayerCount');
+
+                activeCountEl.textContent = activePlayers.length;
+                previousCountEl.textContent = previousPlayers.length;
+
+                if (activePlayers.length === 0) {
+                    activeListEl.innerHTML = `<div class="empty-state"><i class="fas fa-users"></i><p>No active players.</p></div>`;
+                } else {
+                    activeListEl.innerHTML = activePlayers.map(player => `
+                        <div class="player-item">
+                            <div class="player-thumbnail" style="background-image: url('${escapeHTML(player.avatar)}');"></div>
+                            <div class="player-info">
+                                <strong>${escapeHTML(player.displayName)}</strong> (@${escapeHTML(player.username)})
+                            </div>
+                            <div class="status-box uptime">${formatUptime(player.firstSeen, player.lastSeen)}</div>
+                        </div>`).join('');
+                }
+
+                if (previousPlayers.length === 0) {
+                    previousListEl.innerHTML = `<div class="empty-state"><i class="fas fa-users"></i><p>No previous players.</p></div>`;
+                } else {
+                    previousListEl.innerHTML = previousPlayers.map(player => `
+                        <div class="player-item">
+                            <div class="player-thumbnail" style="background-image: url('${escapeHTML(player.avatar)}');"></div>
+                            <div class="player-info">
+                                <strong>${escapeHTML(player.displayName)}</strong> (@${escapeHTML(player.username)})
+                            </div>
+                            <div class="status-box last-seen">${formatLastSeen(player.lastSeen)}</div>
+                        </div>`).join('');
+                }
+            };
+
             const loadScripts = async () => {
-                const auth = await checkAuth(); if (!auth) return;
+                const auth = await checkAuth(); 
+                if (!auth) return;
                 getEl('#scriptList').innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading scripts...</div>`;
                 try {
                     const res = await fetch('/api/script.lua', { headers: { 'Authorization': `Basic ${auth}` } });
-                    if (res.ok) { scripts = await res.json(); renderScripts(); }
-                    else { throw new Error(`Server responded with ${res.status}`); }
-                } catch (err) { getEl('#scriptList').innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Failed to load scripts.</p></div>`; console.error('Failed to load scripts:', err); }
+                    if (res.ok) { 
+                        scripts = await res.json(); 
+                        renderScripts(); 
+                    } else { 
+                        throw new Error(`Server responded with ${res.status}`); 
+                    }
+                } catch (err) { 
+                    getEl('#scriptList').innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Failed to load scripts.</p></div>`; 
+                    console.error('Failed to load scripts:', err); 
+                }
             };
-            
-            const showCreateModal = () => { currentScriptKey = null; getEl('#modalTitle').textContent = 'Create New Script'; getEl('#scriptTitle').value = ''; getEl('#scriptContent').value = ''; getEl('#scriptId').disabled = false; getEl('#scriptObfuscate').checked = false; generateScriptId(); showModal('scriptModal'); };
+
+            const loadPlayers = async () => {
+                const auth = await checkAuth();
+                if (!auth) return;
+                try {
+                    const res = await fetch('/api/players', { headers: { 'Authorization': `Basic ${auth}` } });
+                    if (res.ok) {
+                        const { activePlayers, previousPlayers } = await res.json();
+                        renderPlayers(activePlayers, previousPlayers);
+                    } else {
+                        throw new Error(`Server responded with ${res.status}`);
+                    }
+                } catch (err) {
+                    getEl('#activePlayers').innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Failed to load players.</p></div>`;
+                    console.error('Failed to load players:', err);
+                }
+            };
+
+            const showCreateModal = () => { 
+                currentScriptKey = null; 
+                getEl('#modalTitle').textContent = 'Create New Script'; 
+                getEl('#scriptTitle').value = ''; 
+                getEl('#scriptContent').value = ''; 
+                getEl('#scriptId').disabled = false; 
+                getEl('#scriptObfuscate').checked = false; 
+                generateScriptId(); 
+                showModal('scriptModal'); 
+            };
+
             const showEditModal = async (key) => {
-                const auth = await checkAuth(); if (!auth) return;
-                const script = scripts.find(s => s.key === key); if (!script) return;
+                const auth = await checkAuth(); 
+                if (!auth) return;
+                const script = scripts.find(s => s.key === key); 
+                if (!script) return;
                 currentScriptKey = key;
                 getEl('#modalTitle').textContent = 'Edit Script';
                 getEl('#scriptTitle').value = script.title;
@@ -245,13 +344,37 @@
                 
                 try {
                     const res = await fetch(`/api/script.lua?key=${encodeURIComponent(key)}`, { headers: { 'Authorization': `Basic ${auth}` } });
-                    if (res.ok) { const data = await res.json(); getEl('#scriptContent').value = data.content || ''; getEl('#scriptObfuscate').checked = data.obfuscate || false; updateCharCounts(); }
-                    else { throw new Error(`Server responded with ${res.status}`); }
-                } catch (err) { alert('Failed to load script content.'); closeModal('scriptModal'); }
+                    if (res.ok) { 
+                        const data = await res.json(); 
+                        getEl('#scriptContent').value = data.content || ''; 
+                        getEl('#scriptObfuscate').checked = data.obfuscate || false; 
+                        updateCharCounts(); 
+                    } else { 
+                        throw new Error(`Server responded with ${res.status}`); 
+                    }
+                } catch (err) { 
+                    alert('Failed to load script content.'); 
+                    closeModal('scriptModal'); 
+                }
             };
-            const showDeleteModal = (key) => { const script = scripts.find(s => s.key === key); if (!script) return; currentScriptKey = key; getEl('#deleteScriptName').textContent = script.title; showModal('deleteModal'); };
-            const updateCharCounts = () => { getEl('#scriptIdCharCount').textContent = getEl('#scriptId').value.length; getEl('#contentCharCount').textContent = getEl('#scriptContent').value.length; };
-            const generateScriptId = () => { getEl('#scriptId').value = Array.from({ length: 12 }, () => Math.floor(Math.random() * 10)).join(''); updateCharCounts(); };
+
+            const showDeleteModal = (key) => { 
+                const script = scripts.find(s => s.key === key); 
+                if (!script) return; 
+                currentScriptKey = key; 
+                getEl('#deleteScriptName').textContent = script.title; 
+                showModal('deleteModal'); 
+            };
+
+            const updateCharCounts = () => { 
+                getEl('#scriptIdCharCount').textContent = getEl('#scriptId').value.length; 
+                getEl('#contentCharCount').textContent = getEl('#scriptContent').value.length; 
+            };
+
+            const generateScriptId = () => { 
+                getEl('#scriptId').value = Array.from({ length: 12 }, () => Math.floor(Math.random() * 10)).join(''); 
+                updateCharCounts(); 
+            };
 
             document.body.addEventListener('click', async (e) => {
                 try {
@@ -266,39 +389,86 @@
                         getAllEl('.tab-btn').forEach(b => b.classList.remove('active'));
                         getEl(`#${tabId}-tab`).classList.add('active');
                         tabBtn.classList.add('active');
+                        if (tabId === 'players') await loadPlayers();
                     }
                     else if (actionBtn) {
                         const { action, key } = actionBtn.dataset;
                         if (action === 'edit') await showEditModal(key);
                         if (action === 'delete') showDeleteModal(key);
-                        if (action === 'copy') { const copyText = `local response = game:HttpGet('https://rawscriptserver.vercel.app/scripts/${key}')\nloadstring(response)()`; navigator.clipboard.writeText(copyText).then(() => alert('Lua script loader copied to clipboard!')); }
+                        if (action === 'copy') { 
+                            const copyText = `local response = game:HttpGet('https://rawscriptserver.vercel.app/scripts/${key}')\nloadstring(response)()`; 
+                            navigator.clipboard.writeText(copyText).then(() => alert('Lua script loader copied to clipboard!')); 
+                        }
                     }
-                    else if (closeBtn) { closeModal(closeBtn.dataset.close); }
-                    else if (target.closest('#create-script-btn')) { showCreateModal(); }
-                    else if (target.closest('#generate-id-btn')) { generateScriptId(); }
+                    else if (closeBtn) { 
+                        closeModal(closeBtn.dataset.close); 
+                    }
+                    else if (target.closest('#create-script-btn')) { 
+                        showCreateModal(); 
+                    }
+                    else if (target.closest('#generate-id-btn')) { 
+                        generateScriptId(); 
+                    }
                     else if (target.closest('#refresh-scripts-btn')) {
-                        const btn = target.closest('#refresh-scripts-btn'); const icon = btn.querySelector('i');
-                        icon.classList.add('fa-spin'); btn.disabled = true;
+                        const btn = target.closest('#refresh-scripts-btn'); 
+                        const icon = btn.querySelector('i');
+                        icon.classList.add('fa-spin'); 
+                        btn.disabled = true;
                         await loadScripts();
-                        icon.classList.remove('fa-spin'); btn.disabled = false;
+                        icon.classList.remove('fa-spin'); 
+                        btn.disabled = false;
                     }
                     else if (target.closest('#save-script-btn')) {
-                        const btn = target.closest('#save-script-btn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-                        const auth = await checkAuth(); if (!auth) return;
-                        const payload = { key: getEl('#scriptId').value.trim(), title: getEl('#scriptTitle').value.trim(), content: getEl('#scriptContent').value, obfuscate: getEl('#scriptObfuscate').checked };
-                        if (!payload.title || !payload.key || !payload.content || payload.key.length !== 12 || !/^\d+$/.test(payload.key)) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save'; return alert('Please fill all fields correctly.'); }
-                        const res = await fetch('/api/script.lua', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Basic ${auth}` }, body: JSON.stringify(payload) });
-                        if (res.ok) { closeModal('scriptModal'); await loadScripts(); } else { alert(`Error saving script: ${await res.text()}`); }
-                        btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save';
+                        const btn = target.closest('#save-script-btn'); 
+                        btn.disabled = true; 
+                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                        const auth = await checkAuth(); 
+                        if (!auth) return;
+                        const payload = { 
+                            key: getEl('#scriptId').value.trim(), 
+                            title: getEl('#scriptTitle').value.trim(), 
+                            content: getEl('#scriptContent').value, 
+                            obfuscate: getEl('#scriptObfuscate').checked 
+                        };
+                        if (!payload.title || !payload.key || !payload.content || payload.key.length !== 12 || !/^\d+$/.test(payload.key)) { 
+                            btn.disabled = false; 
+                            btn.innerHTML = '<i class="fas fa-save"></i> Save'; 
+                            return alert('Please fill all fields correctly.'); 
+                        }
+                        const res = await fetch('/api/script.lua', { 
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Basic ${auth}` }, 
+                            body: JSON.stringify(payload) 
+                        });
+                        if (res.ok) { 
+                            closeModal('scriptModal'); 
+                            await loadScripts(); 
+                        } else { 
+                            alert(`Error saving script: ${await res.text()}`); 
+                        }
+                        btn.disabled = false; 
+                        btn.innerHTML = '<i class="fas fa-save"></i> Save';
                     }
                     else if (target.closest('#confirm-delete-btn')) {
-                        const auth = await checkAuth(); if (!auth || !currentScriptKey) return;
-                        const res = await fetch(`/api/script.lua?key=${encodeURIComponent(currentScriptKey)}`, { method: 'DELETE', headers: { 'Authorization': `Basic ${auth}` } });
-                        if (res.ok) { closeModal('deleteModal'); await loadScripts(); } else { alert(`Error deleting script: ${await res.text()}`); }
+                        const auth = await checkAuth(); 
+                        if (!auth || !currentScriptKey) return;
+                        const res = await fetch(`/api/script.lua?key=${encodeURIComponent(currentScriptKey)}`, { 
+                            method: 'DELETE', 
+                            headers: { 'Authorization': `Basic ${auth}` } 
+                        });
+                        if (res.ok) { 
+                            closeModal('deleteModal'); 
+                            await loadScripts(); 
+                        } else { 
+                            alert(`Error deleting script: ${await res.text()}`); 
+                        }
                     }
-                } catch (error) { console.error("Dashboard Click Handler Error:", error); alert("An unexpected error occurred. Please refresh the page."); }
+                } catch (error) { 
+                    console.error("Dashboard Click Handler Error:", error); 
+                    alert("An unexpected error occurred. Please refresh the page."); 
+                }
             });
-            
+
             getEl('#scriptId').addEventListener('input', updateCharCounts);
             getEl('#scriptContent').addEventListener('input', updateCharCounts);
 
@@ -307,6 +477,9 @@
                 getEl('#loading-screen').style.display = 'none';
                 getEl('#dashboard').style.display = 'block';
                 await loadScripts();
+                // Start periodic player updates
+                await loadPlayers();
+                setInterval(loadPlayers, 60 * 1000); // Update every minute
             }
         });
     </script>
