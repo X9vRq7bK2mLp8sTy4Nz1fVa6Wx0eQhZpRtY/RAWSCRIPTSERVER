@@ -1,17 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lua Script Server</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f0f0f0; }
-    a { color: #007bff; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <style>
+        /* Basic Styling */
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            overflow: hidden; /* Prevents scrollbars during animation */
+        }
+
+        /* Centering Container */
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            height: 100%;
+        }
+
+        /* Text Elements - initially hidden */
+        #main-text, #sub-text {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        /* Animation Keyframes */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+
+        /* Animation Trigger Classes */
+        .fade-in {
+            animation: fadeIn 1.5s ease-out forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 1s ease-in forwards;
+        }
+    </style>
 </head>
 <body>
-  <h1>Lua Script Server</h1>
-  <p>Access the <a href="/login.html">admin panel</a> to manage scripts.</p>
+
+    <div class="container">
+        <h1 id="main-text">Your Website</h1>
+        <p id="sub-text">Loading your experience.</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainText = document.getElementById('main-text');
+            const subText = document.getElementById('sub-text');
+
+            // --- IN ANIMATION ---
+            // Start the "in" animation for the main text immediately
+            mainText.classList.add('fade-in');
+
+            // Start the "in" animation for the sub-text with a slight delay
+            setTimeout(() => {
+                subText.classList.add('fade-in');
+            }, 500); // 0.5 second delay
+
+            
+            // --- OUT ANIMATION & REDIRECT ---
+            // Set a timer to start the "out" animation after a pause
+            const pauseDuration = 3000; // 3 seconds after page load
+            const fadeOutDuration = 1000; // 1 second for the fade-out animation
+
+            setTimeout(() => {
+                mainText.classList.remove('fade-in');
+                subText.classList.remove('fade-in');
+                
+                mainText.classList.add('fade-out');
+                subText.classList.add('fade-out');
+            }, pauseDuration);
+
+            // Set a final timer to redirect to the login page
+            // This should be the pause duration + the fade-out duration
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, pauseDuration + fadeOutDuration);
+        });
+    </script>
+
 </body>
 </html>
