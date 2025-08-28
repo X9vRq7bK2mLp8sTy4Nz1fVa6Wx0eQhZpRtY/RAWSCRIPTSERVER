@@ -3,107 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome</title>
+    <title>Login | Frosted Glass</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        /* Basic Styling */
-        body, html {
-            height: 100%;
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            overflow: hidden; /* Prevents scrollbars during animation */
+        :root {
+            --primary: #6C63FF;
+            --primary-dark: #564fd8;
+            --danger: #FF4B4B;
+            --danger-dark: #e04444;
+            --text: white;
+            --text-light: rgba(255, 255, 255, 0.7);
+            --bg-blur: rgba(30, 30, 80, 0.3);
+            --border-light: rgba(255, 255, 255, 0.15);
+            --card-bg: rgba(30, 30, 80, 0.2);
+            --grey-bg: rgba(80, 80, 100, 0.3);
         }
-
-        /* Centering Container */
-        .container {
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html {
+            height: 100%;
+            overscroll-behavior-y: none;
+        }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden; /* Prevent scrollbars on login page */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
+        }
+
+        /* Keyframes for the entrance animation */
+        @keyframes fadeInZoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
             text-align: center;
-            height: 100%;
-        }
-
-        /* Text Elements - initially hidden */
-        #main-text, #sub-text {
+            background: var(--bg-blur);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-light);
+            /* Entrance animation for the card */
             opacity: 0;
-            transform: translateY(20px);
+            transform: scale(0.95) translateY(10px);
+            animation: fadeInZoomIn 0.5s 0.2s ease-out forwards;
         }
 
-        /* Animation Keyframes */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff, #e6e6e6);
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        @keyframes fadeOut {
-            from {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
+        .subtitle {
+            color: var(--text-light);
+            margin-bottom: 30px;
+        }
+        
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        /* Animation Trigger Classes */
-        .fade-in {
-            animation: fadeIn 1.5s ease-out forwards;
+        .form-group {
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+        
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.3);
+            background: rgba(30, 30, 80, 0.4);
         }
 
-        .fade-out {
-            animation: fadeOut 1s ease-in forwards;
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: var(--text);
+            gap: 8px;
+            margin-top: 10px; /* Add some space above the button */
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+        }
+        
+        .error-message {
+            display: none;
+            background-color: rgba(255, 75, 75, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1 id="main-text">Your Website</h1>
-        <p id="sub-text">Loading your experience.</p>
+    <div class="login-card">
+        <h1>Welcome Back</h1>
+        <p class="subtitle">Please enter your credentials to log in.</p>
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary" id="login-btn">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+        </form>
+        <div class="error-message" id="errorMessage"></div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const mainText = document.getElementById('main-text');
-            const subText = document.getElementById('sub-text');
+        document.addEventListener('DOMContentLoaded', () => {
+            // If user is already authenticated, redirect them to the dashboard
+            if (localStorage.getItem('auth')) {
+                window.location.href = '/'; // Or '/index.html'
+            }
 
-            // --- IN ANIMATION ---
-            // Start the "in" animation for the main text immediately
-            mainText.classList.add('fade-in');
+            const loginForm = document.getElementById('loginForm');
+            const loginBtn = document.getElementById('login-btn');
+            const errorMessage = document.getElementById('errorMessage');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
 
-            // Start the "in" animation for the sub-text with a slight delay
-            setTimeout(() => {
-                subText.classList.add('fade-in');
-            }, 500); // 0.5 second delay
-
-            
-            // --- OUT ANIMATION & REDIRECT ---
-            // Set a timer to start the "out" animation after a pause
-            const pauseDuration = 3000; // 3 seconds after page load
-            const fadeOutDuration = 1000; // 1 second for the fade-out animation
-
-            setTimeout(() => {
-                mainText.classList.remove('fade-in');
-                subText.classList.remove('fade-in');
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
                 
-                mainText.classList.add('fade-out');
-                subText.classList.add('fade-out');
-            }, pauseDuration);
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value.trim();
 
-            // Set a final timer to redirect to the login page
-            // This should be the pause duration + the fade-out duration
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, pauseDuration + fadeOutDuration);
+                if (!username || !password) {
+                    errorMessage.textContent = 'Please enter both username and password.';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+
+                // UI feedback
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
+                errorMessage.style.display = 'none';
+
+                // Create Basic Auth token
+                const authToken = btoa(`${username}:${password}`);
+
+                try {
+                    // Attempt to fetch a protected resource to verify credentials
+                    const response = await fetch('/api/script.lua', {
+                        headers: {
+                            'Authorization': `Basic ${authToken}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        // Success! Store the token and redirect.
+                        localStorage.setItem('auth', authToken);
+                        // Optional: Add a success animation/message before redirecting
+                        loginBtn.innerHTML = '<i class="fas fa-check"></i> Success!';
+                        setTimeout(() => {
+                            window.location.href = '/'; // Redirect to the main dashboard
+                        }, 500);
+                    } else {
+                        // Failure
+                        throw new Error('Invalid credentials');
+                    }
+                } catch (error) {
+                    errorMessage.textContent = 'Invalid credentials. Please try again.';
+                    errorMessage.style.display = 'block';
+                } finally {
+                    // Re-enable the button if it's not a success redirect
+                    if (!localStorage.getItem('auth')) {
+                        loginBtn.disabled = false;
+                        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+                    }
+                }
+            });
         });
     </script>
 
