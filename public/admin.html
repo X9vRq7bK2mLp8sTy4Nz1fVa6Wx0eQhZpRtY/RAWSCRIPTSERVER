@@ -23,8 +23,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html {
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            /* **FIX:** Disable overscroll bounce effect */
             overscroll-behavior-y: none;
         }
         body {
@@ -36,6 +34,9 @@
             padding: 20px;
             overflow-x: hidden;
             padding-top: 220px;
+            /* **FIX:** Robust full-page background to prevent overscroll issues */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
         }
         .loading { display: flex; justify-content: center; align-items: center; min-height: 100vh; font-size: 1.5rem; color: var(--text-light); text-align: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; }
         .sticky-header { position: fixed; top: 20px; left: 20px; right: 20px; z-index: 100; padding: 20px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); border: 1px solid var(--border-light); background: var(--bg-blur); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); display: flex; flex-direction: column; gap: 20px; }
@@ -99,21 +100,17 @@
         .modal-footer { display: flex; justify-content: flex-end; gap: 15px; margin-top: 25px; padding-top: 15px; border-top: 1px solid var(--border-light); }
         .script-name { font-weight: 700; background: var(--card-bg); padding: 10px 15px; border-radius: 12px; margin: 15px 0; display: inline-block; }
         
-        /* **FIX:** Responsive styles for tablets and phones */
         @media (max-width: 768px) {
             body { padding-top: 200px; }
             .sticky-header { padding: 20px; }
             h1 { font-size: 1.8rem; }
             .tabs { overflow-x: auto; }
-            /* Stack script and player items vertically */
             .script-item, .player-item { flex-direction: column; align-items: stretch; }
             .script-actions { margin-top: 15px; justify-content: flex-end; }
             .player-item .status-box { align-self: flex-end; margin-top: 10px; }
         }
-
-        /* **FIX:** Specific styles for small phones */
         @media (max-width: 480px) {
-            body { padding-top: 220px; } /* More padding for very small screens */
+            body { padding-top: 220px; }
             .controls { flex-direction: column; }
             .controls .btn { width: 100%; }
             .script-actions { flex-wrap: wrap; justify-content: flex-start; }
@@ -198,7 +195,7 @@
                             <div class="script-key">Key: ${escapeHTML(script.key)}</div>
                         </div>
                         <div class="script-actions">
-                            <button class="btn" data-action="copy" data-key="${escapeHTML(script.key)}"><i class="fas fa-copy"></i> Copy</button>
+                            <button class="btn btn-secondary" data-action="copy" data-key="${escapeHTML(script.key)}"><i class="fas fa-copy"></i> Copy</button>
                             <button class="btn btn-primary" data-action="edit" data-key="${escapeHTML(script.key)}"><i class="fas fa-edit"></i> Edit</button>
                             <button class="btn btn-danger" data-action="delete" data-key="${escapeHTML(script.key)}"><i class="fas fa-trash"></i> Delete</button>
                         </div>
