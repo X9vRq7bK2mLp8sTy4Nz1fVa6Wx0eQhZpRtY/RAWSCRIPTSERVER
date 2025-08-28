@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src https://cdnjs.cloudflare.com data:; script-src 'self' 'unsafe-inline'">
-    <meta http-equiv="X-Frame-Options" content="DENY">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <title>Script Dashboard | Frosted Glass</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
@@ -14,1045 +11,360 @@
             --primary-dark: #564fd8;
             --danger: #FF4B4B;
             --danger-dark: #e04444;
-            --success: #4CAF50;
-            --success-dark: #3d8b40;
+            --success-bg-pastel: rgba(40, 167, 69, 0.2);
+            --success-text-bright: #69f0ae;
             --text: white;
             --text-light: rgba(255, 255, 255, 0.7);
-            --bg-blur: rgba(0, 0, 128, 0.15);
-            --bg-blur-fallback: rgba(0, 0, 128, 0.3);
-            --border-light: rgba(255, 255, 255, 0.2);
-            --card-bg: rgba(0, 0, 128, 0.1);
-            --card-bg-fallback: rgba(0, 0, 128, 0.25);
+            --bg-blur: rgba(30, 30, 80, 0.3);
+            --border-light: rgba(255, 255, 255, 0.15);
+            --card-bg: rgba(30, 30, 80, 0.2);
+            --grey-bg: rgba(80, 80, 100, 0.3);
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            color: var(--text);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            position: relative;
-            overflow-x: hidden;
-        }
-
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-size: 1.5rem;
-            color: var(--text-light);
-            text-align: center;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: var(--bg-blur);
-            background: var(--bg-blur-fallback);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border-light);
-            text-align: center;
-            display: none;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #fff, #e6e6e6);
-            -webkit-background-clip: text;
-            color: transparent;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .subtitle {
-            color: var(--text-light);
-            font-size: 1.1rem;
-            font-weight: 300;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 14px 24px;
-            font-size: 1rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            background: var(--bg-blur);
-            background: var(--bg-blur-fallback);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            color: var(--text);
-            gap: 8px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-        }
-
-        .btn-secondary {
-            background: var(--bg-blur);
-            background: var(--bg-blur-fallback);
-            color: var(--text);
-            border: 1px solid var(--border-light);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(0, 0, 128, 0.2);
-        }
-
-        .script-list {
-            margin-top: 20px;
-            max-height: 50vh;
-            overflow-y: auto;
-            border-radius: 12px;
-            padding: 15px;
-            background: var(--card-bg);
-            background: var(--card-bg-fallback);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--border-light);
-        }
-
-        .script-list::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .script-list::-webkit-scrollbar-track {
-            background: rgba(0, 0, 128, 0.1);
-            border-radius: 4px;
-        }
-
-        .script-list::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 4px;
-        }
-
-        .script-item {
-            padding: 20px;
-            border-bottom: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s ease;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            background: var(--card-bg);
-            background: var(--card-bg-fallback);
-        }
-
-        .script-item:hover {
-            background: rgba(0, 0, 128, 0.2);
-            transform: translateX(5px);
-        }
-
-        .script-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .script-info {
-            flex: 1;
-            text-align: left;
-        }
-
-        .script-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--text);
-            margin-bottom: 5px;
-        }
-
-        .script-key {
-            font-size: 0.9rem;
-            color: var(--text-light);
-            font-family: monospace;
-            margin-bottom: 8px;
-            word-break: break-all;
-        }
-
-        .script-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .action-btn {
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.2s ease;
-            background: var(--bg-blur);
-            background: var(--bg-blur-fallback);
-            color: var(--text);
-            border: 1px solid var(--border-light);
-        }
-
-        .action-btn:hover {
-            background: rgba(0, 0, 128, 0.2);
-        }
-
-        .action-btn.btn-primary {
-            background: var(--primary);
-            border: none;
-        }
-
-        .action-btn.btn-primary:hover {
-            background: var(--primary-dark);
-        }
-
-        .action-btn.btn-danger {
-            background: var(--danger);
-            border: none;
-        }
-
-        .action-btn.btn-danger:hover {
-            background: var(--danger-dark);
-        }
-
-        .modal-backdrop {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0);
-            backdrop-filter: blur(3px);
-            -webkit-backdrop-filter: blur(3px);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 20px;
-            transition: background 0.4s ease-in-out;
-        }
-
-        .modal-backdrop.appear {
-            background: rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-backdrop.disappear {
-            background: rgba(0, 0, 0, 0);
-        }
-
-        .modal {
-            background: var(--bg-blur);
-            background: var(--bg-blur-fallback);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 30px;
-            width: 100%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border-light);
-            transform-origin: center center;
-        }
-
-        .modal.appear {
-            animation: modalAppear 0.4s ease-in-out;
-        }
-
-        .modal.disappear {
-            animation: modalDisappear 0.4s ease-in-out;
-        }
-
-        @keyframes modalAppear {
-            from {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        @keyframes modalDisappear {
-            from {
-                opacity: 1;
-                transform: scale(1);
-            }
-            to {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border-light);
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--text-light);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .close-btn:hover {
-            color: var(--text);
-            transform: rotate(90deg);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--text);
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 15px;
-            font-size: 1rem;
-            background: var(--card-bg);
-            background: var(--card-bg-fallback);
-            border: 1px solid var(--border-light);
-            border-radius: 10px;
-            color: var(--text);
-            transition: all 0.3s ease;
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.3);
-            background: rgba(0, 0, 128, 0.2);
-        }
-
-        input:disabled {
-            background: rgba(0, 0, 128, 0.3);
-            color: var(--text-light);
-            cursor: not-allowed;
-        }
-
-        textarea {
-            min-height: 200px;
-            font-family: monospace;
-            resize: vertical;
-        }
-
-        .char-count {
-            text-align: right;
-            font-size: 0.85rem;
-            color: var(--text-light);
-            margin-top: 5px;
-        }
-
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 1px solid var(--border-light);
-        }
-
-        .confirmation-modal {
-            text-align: center;
-        }
-
-        .confirmation-text {
-            margin-bottom: 25px;
-            color: var(--text);
-            line-height: 1.6;
-        }
-
-        .script-name {
-            font-weight: 700;
-            color: var(--text);
-            background: var(--card-bg);
-            background: var(--card-bg-fallback);
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            display: inline-block;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-light);
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            color: var(--text-light);
-        }
-
-        .empty-state p {
-            font-size: 1.1rem;
-            color: var(--text);
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-
-            .script-item {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .script-actions {
-                width: 100%;
-                margin-top: 15px;
-                justify-content: flex-end;
-            }
-
-            .controls {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .btn {
-                width: 100%;
-                max-width: 300px;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 16px; line-height: 1.6; color: var(--text); min-height: 100vh; padding: 20px; overflow-x: hidden; padding-top: 170px; }
+        .loading { display: flex; justify-content: center; align-items: center; min-height: 100vh; font-size: 1.5rem; color: var(--text-light); text-align: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; }
+        .sticky-header { position: fixed; top: 20px; left: 20px; right: 20px; z-index: 100; padding: 20px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); border: 1px solid var(--border-light); background: var(--bg-blur); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); display: flex; flex-direction: column; gap: 20px; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 2.2rem; font-weight: 700; background: linear-gradient(135deg, #fff, #e6e6e6); -webkit-background-clip: text; color: transparent; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tabs { display: flex; gap: 10px; border-bottom: 1px solid var(--border-light); padding-bottom: 15px; }
+        .tab-btn { padding: 10px 20px; font-size: 1rem; font-weight: 600; background: transparent; border: none; color: var(--text-light); border-radius: 12px; cursor: pointer; transition: all 0.3s ease; position: relative; }
+        .tab-btn:hover { color: var(--text); background: var(--card-bg); }
+        .tab-btn.active { color: var(--text); background: var(--primary); }
+        .dashboard-container { max-width: 1200px; margin: 0 auto; background: var(--bg-blur); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); border: 1px solid var(--border-light); display: none; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .controls { display: flex; justify-content: flex-start; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 14px 24px; font-size: 1rem; font-weight: 600; border: none; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); color: var(--text); gap: 8px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); }
+        .btn-primary { background: var(--primary); }
+        .btn-secondary { background: var(--card-bg); border: 1px solid var(--border-light); }
+        .btn-danger { background: var(--danger); color: white; }
+        .script-list, .player-list { overflow-y: auto; border-radius: 12px; padding-right: 10px; }
+        .script-list::-webkit-scrollbar, .player-list::-webkit-scrollbar { width: 8px; }
+        .script-list::-webkit-scrollbar-track, .player-list::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); border-radius: 4px; }
+        .script-list::-webkit-scrollbar-thumb, .player-list::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+        .script-list { max-height: 55vh; padding-top: 10px; padding-left: 10px; }
+        .script-item { padding: 20px; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease; border-radius: 15px; margin-bottom: 10px; background: var(--card-bg); border: 1px solid transparent; }
+        .script-item:hover { background: rgba(30, 30, 80, 0.4); transform: scale(1.02); border-color: var(--border-light); }
+        .script-info { flex: 1; text-align: left; word-break: break-word; }
+        .script-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 5px; }
+        .script-key { font-size: 0.9rem; color: var(--text-light); font-family: monospace; }
+        .script-actions { display: flex; gap: 10px; flex-shrink: 0; margin-left: 20px; }
+        .player-list { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; max-height: 260px; }
+        .player-item { display: flex; align-items: center; gap: 15px; background: var(--card-bg); padding: 15px; border-radius: 15px; transition: all 0.3s ease; flex-shrink: 0; }
+        .previous-players .player-item { opacity: 0.7; }
+        .player-thumbnail { width: 50px; height: 50px; border-radius: 50%; background-color: var(--primary); flex-shrink: 0; background-image: url('https://via.placeholder.com/50'); background-size: cover; }
+        .player-info { flex-grow: 1; }
+        .status-box { font-size: 0.85rem; font-weight: 600; padding: 5px 12px; border-radius: 8px; white-space: nowrap; }
+        .status-box.uptime { background-color: var(--success-bg-pastel); color: var(--success-text-bright); }
+        .status-box.last-seen { background-color: var(--grey-bg); color: var(--text-light); }
+        h2.section-title { margin-top: 20px; font-size: 1.3rem; color: var(--text-light); border-bottom: 1px solid var(--border-light); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        h2.section-title:first-child { margin-top: 0; }
+        .status-box.player-count { background-color: var(--grey-bg); color: var(--text-light); font-size: 0.9rem; }
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-light); }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; }
+        .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 1000; padding: 20px; background: rgba(0, 0, 0, 0); transition: background 0.4s ease-in-out; }
+        .modal { background: var(--bg-blur); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; padding: 30px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2); border: 1px solid var(--border-light); }
+        .modal-backdrop.appear { background: rgba(0, 0, 0, 0.5); }
+        .modal.appear { animation: modalAppear 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+        .modal.disappear { animation: modalDisappear 0.4s cubic-bezier(0.5, 0, 0.75, 0); }
+        @keyframes modalAppear { from { opacity: 0; transform: scale(0.8) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes modalDisappear { from { opacity: 1; transform: scale(1) translateY(0); } to { opacity: 0; transform: scale(0.8) translateY(20px); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border-light); }
+        .modal-title { font-size: 1.5rem; }
+        .close-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-light); cursor: pointer; transition: all 0.2s ease; }
+        .close-btn:hover { color: var(--text); transform: rotate(90deg); }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 8px; font-weight: 500; }
+        input[type="text"], textarea { width: 100%; padding: 15px; font-size: 1rem; background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 12px; color: var(--text); transition: all 0.3s ease; }
+        input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.3); background: rgba(30, 30, 80, 0.4); }
+        input[type="text"]:disabled { background: rgba(0,0,128,0.3); cursor: not-allowed; }
+        textarea { min-height: 200px; font-family: monospace; resize: vertical; }
+        .char-count { text-align: right; font-size: 0.85rem; color: var(--text-light); margin-top: 5px; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 15px; margin-top: 25px; padding-top: 15px; border-top: 1px solid var(--border-light); }
+        .script-name { font-weight: 700; background: var(--card-bg); padding: 10px 15px; border-radius: 12px; margin: 15px 0; display: inline-block; }
+        @media (max-width: 768px) { body { padding-top: 150px; } .sticky-header { padding: 20px; } h1 { font-size: 1.8rem; } .script-item { flex-direction: column; align-items: stretch; } .script-actions { margin-top: 15px; justify-content: flex-end; } }
     </style>
 </head>
 <body>
-    <div class="loading" id="loading">
-        <i class="fas fa-spinner fa-spin"></i> Checking authentication...
-    </div>
-    <div class="container" id="dashboard">
-        <header>
-            <h1>Script Dashboard</h1>
-            <p class="subtitle">Manage your scripts with style</p>
-        </header>
+    <div class="loading" id="loading-screen"><i class="fas fa-spinner fa-spin"></i> Checking authentication...</div>
 
-        <div class="controls">
-            <button class="btn btn-primary" onclick="showCreateModal()">
-                <i class="fas fa-plus"></i> Create New Script
-            </button>
-            <button class="btn btn-secondary" onclick="loadScripts()">
-                <i class="fas fa-sync-alt"></i> Refresh List
-            </button>
+    <header class="sticky-header">
+        <div class="header-top"><h1>Dashboard</h1></div>
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="scripts"><i class="fas fa-code"></i> Scripts</button>
+            <button class="tab-btn" data-tab="players"><i class="fas fa-users"></i> Players</button>
+            <button class="tab-btn" data-tab="settings"><i class="fas fa-cog"></i> Settings</button>
+        </nav>
+    </header>
+
+    <div class="dashboard-container" id="dashboard">
+        <div id="scripts-tab" class="tab-content active">
+            <div class="controls">
+                <button class="btn btn-primary" id="create-script-btn"><i class="fas fa-plus"></i> Create New Script</button>
+                <button class="btn btn-secondary" id="refresh-scripts-btn"><i class="fas fa-sync-alt"></i> Refresh List</button>
+            </div>
+            <div class="script-list" id="scriptList"></div>
         </div>
 
-        <div class="script-list" id="scriptList">
+        <div id="players-tab" class="tab-content">
+            <h2 class="section-title">Active Players <span class="status-box player-count">1</span></h2>
+            <div class="player-list active-players">
+                <div class="player-item"><div class="player-thumbnail"></div><div class="player-info"><strong>PlayerOne</strong> (@player1_roblox)</div><div class="status-box uptime">1h 14m</div></div>
+            </div>
+            <h2 class="section-title">Previous Players <span class="status-box player-count">1</span></h2>
+            <div class="player-list previous-players">
+                <div class="player-item"><div class="player-thumbnail" style="background-image: url('https://via.placeholder.com/50/DAF7A6');"></div><div class="player-info"><strong>Admin_User</strong> (@admin_is_cool)</div><div class="status-box last-seen">28 Aug 2025</div></div>
+            </div>
+        </div>
+        
+        <div id="settings-tab" class="tab-content">
             <div class="empty-state">
-                <i class="fas fa-code"></i>
-                <p>No scripts found. Create your first script to get started.</p>
+                <i class="fas fa-tools"></i>
+                <p>Settings are under construction.</p>
+                <small>User profile, theme, and security settings will be available here soon.</small>
             </div>
         </div>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <div class="modal-backdrop" id="scriptModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h2 class="modal-title" id="modalTitle">Create New Script</h2>
-                <button class="close-btn" onclick="closeModal('scriptModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-
-            <div class="form-group">
-                <label for="scriptTitle">Script Title</label>
-                <input type="text" id="scriptTitle" placeholder="Enter a descriptive name for your script">
-            </div>
-
-            <div class="form-group">
-                <label for="scriptId">Script ID (12 digits)</label>
-                <input type="text" id="scriptId" maxlength="12" placeholder="Enter or generate 12-digit ID">
-                <button class="btn btn-secondary" style="margin-top: 10px; width: auto;" onclick="generateScriptId()">
-                    <i class="fas fa-redo"></i> Regenerate
-                </button>
-                <div class="char-count"><span id="scriptIdCharCount">0</span>/12 characters</div>
-            </div>
-
-            <div class="form-group">
-                <label for="scriptContent">Script Content (200,000 characters max)</label>
-                <textarea id="scriptContent" placeholder="Paste your Lua script here"></textarea>
-                <div class="char-count"><span id="contentCharCount">0</span>/200000 characters</div>
-            </div>
-
-            <div class="form-group">
-                <label><input type="checkbox" id="scriptObfuscate"> Obfuscate Script</label>
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('scriptModal')">Cancel</button>
-                <button class="btn btn-primary" id="saveScriptBtn" onclick="saveScript()">
-                    <i class="fas fa-save"></i> Save Script
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div class="modal-backdrop" id="deleteModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h2 class="modal-title">Confirm Deletion</h2>
-                <button class="close-btn" onclick="closeModal('deleteModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-
-            <div class="confirmation-modal">
-                <p class="confirmation-text">Are you sure you want to delete this script? This action cannot be undone.</p>
-                <div class="script-name" id="deleteScriptName"></div>
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
-                <button class="btn btn-danger" onclick="confirmDelete()">
-                    <i class="fas fa-trash"></i> Delete Script
-                </button>
-            </div>
-        </div>
-    </div>
+    <div class="modal-backdrop" id="scriptModal"><div class="modal"><div class="modal-header"><h2 class="modal-title" id="modalTitle"></h2><button class="close-btn" data-close="scriptModal"><i class="fas fa-times"></i></button></div><div class="form-group"><label for="scriptTitle">Script Title</label><input type="text" id="scriptTitle"></div><div class="form-group"><label for="scriptId">Script ID (12 digits)</label><input type="text" id="scriptId" maxlength="12"><button class="btn btn-secondary" style="margin-top: 10px;" id="generate-id-btn"><i class="fas fa-dice"></i> Generate ID</button><div class="char-count"><span id="scriptIdCharCount">0</span>/12</div></div><div class="form-group"><label for="scriptContent">Script Content (200,000 chars max)</label><textarea id="scriptContent"></textarea><div class="char-count"><span id="contentCharCount">0</span>/200000</div></div><div class="form-group"><label><input type="checkbox" id="scriptObfuscate"> Obfuscate Script</label></div><div class="modal-footer"><button class="btn btn-secondary" data-close="scriptModal">Cancel</button><button class="btn btn-primary" id="save-script-btn"><i class="fas fa-save"></i> Save</button></div></div></div>
+    <div class="modal-backdrop" id="deleteModal"><div class="modal"><div class="modal-header"><h2 class="modal-title">Confirm Deletion</h2><button class="close-btn" data-close="deleteModal"><i class="fas fa-times"></i></button></div><p>This action cannot be undone.</p><div class="script-name" id="deleteScriptName"></div><div class="modal-footer"><button class="btn btn-secondary" data-close="deleteModal">Cancel</button><button class="btn btn-danger" id="confirm-delete-btn"><i class="fas fa-trash"></i> Delete</button></div></div></div>
 
     <script>
-        let scripts = [];
-        let currentScriptKey = null;
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- STATE & CONFIG ---
+            let scripts = [];
+            let currentScriptKey = null;
 
-        // Browser compatibility check
-        function checkBrowserCompatibility() {
-            try {
-                const supportsBackdropFilter = CSS.supports('backdrop-filter', 'blur(10px)');
-                if (!supportsBackdropFilter) {
-                    console.warn('Backdrop-filter not supported. Using fallback backgrounds.');
-                    alert('Your browser does not support frosted glass effects. Some visual elements may look different.');
-                }
-                console.log('CSS loaded successfully. Font Awesome CDN loaded.');
-            } catch (err) {
-                console.error('Error in checkBrowserCompatibility:', err);
-            }
-        }
+            // --- SELECTORS ---
+            const getEl = (selector) => document.querySelector(selector);
+            const getAllEl = (selector) => document.querySelectorAll(selector);
 
-        // Check auth and control page rendering
-        async function checkAuth() {
-            try {
+            // --- AUTHENTICATION ---
+            const checkAuth = async () => {
                 const auth = localStorage.getItem('auth');
-                if (!auth) {
-                    console.error('No auth token found');
-                    window.location.href = '/login.html';
-                    return false;
+                if (!auth) { window.location.href = '/login.html'; return false; }
+                try {
+                    const res = await fetch('/api/script.lua', { headers: { 'Authorization': `Basic ${auth}` } });
+                    if (!res.ok) { window.location.href = '/login.html'; return false; }
+                    return auth;
+                } catch (err) { window.location.href = '/login.html'; return false; }
+            };
+            
+            // --- CORE UI FUNCTIONS ---
+            const showModal = (id) => { const modal = getEl(`#${id}`); modal.style.display = 'flex'; requestAnimationFrame(() => { modal.classList.add('appear'); modal.querySelector('.modal').classList.add('appear'); }); };
+            const closeModal = (id) => { const modal = getEl(`#${id}`); const modalContent = modal.querySelector('.modal'); modal.classList.remove('appear'); modalContent.classList.add('disappear'); setTimeout(() => { modal.style.display = 'none'; modalContent.classList.remove('disappear'); modalContent.classList.remove('appear'); }, 400); };
+            const escapeHTML = (str) => { const p = document.createElement('p'); p.textContent = str; return p.innerHTML; };
+            
+            // --- DATA & RENDERING ---
+            const renderScripts = () => { /* ... existing renderScripts logic ... */ }; // Placeholder for brevity
+            const loadScripts = async () => { /* ... existing loadScripts logic ... */ }; // Placeholder for brevity
+
+            // --- MODAL HANDLERS ---
+            const showCreateModal = () => { /* ... existing showCreateModal logic ... */ }; // Placeholder for brevity
+            const showEditModal = async (key) => { /* ... existing showEditModal logic ... */ }; // Placeholder for brevity
+            const showDeleteModal = (key) => { /* ... existing showDeleteModal logic ... */ }; // Placeholder for brevity
+            const updateCharCounts = () => { /* ... existing updateCharCounts logic ... */ }; // Placeholder for brevity
+            const generateScriptId = () => { /* ... existing generateScriptId logic ... */ }; // Placeholder for brevity
+
+            // --- PROMPTS FOR ROBLOX SCRIPT & BACKEND LOGIC ---
+            //
+            // To make the 'Players' tab functional, the following components are needed:
+            //
+            // 1. BACKEND API ENDPOINT (e.g., create a new file /api/players.lua)
+            //    - It needs to handle GET requests to fetch player lists for the dashboard.
+            //    - It needs to handle POST requests from the Roblox game server (heartbeats).
+            //    - It should interact with a MongoDB collection (e.g., 'players').
+            //    - A player document should contain fields like: `userId`, `displayName`, `username`, `lastSeen` (timestamp), and `status` ('active' or 'inactive').
+            //    - The backend should automatically change a player's status from 'active' to 'inactive' if a heartbeat hasn't been received in over 5 minutes.
+            //
+            // 2. ROBLOX LUA SCRIPT (To run in the game server)
+            //    - Use HttpService to communicate with your backend.
+            //    - When a player joins (`Players.PlayerAdded`), send a POST request to your API with the player's info (UserId, DisplayName, Name).
+            //    - In a server-side loop (e.g., `while task.wait(60) do`), iterate through all players in `game.Players:GetPlayers()`.
+            //    - For each player, send a POST request (a "heartbeat") to the API to update their `lastSeen` timestamp and confirm they are still active.
+            //
+            // 3. FRONTEND JAVASCRIPT (To be added below)
+            //    - Create a new `async function loadPlayers()` here in the script.
+            //    - This function should `fetch` data from your '/api/players.lua' endpoint.
+            //    - The endpoint should return JSON like: `{ "activePlayers": [...], "inactivePlayers": [...] }`.
+            //    - The function would then call a new `renderPlayers(data)` function to build the HTML and update the UI.
+            //    - `loadPlayers()` should be called when the 'Players' tab is clicked.
+            //
+            
+            // --- MASTER EVENT LISTENER ---
+            document.body.addEventListener('click', async (e) => {
+                try {
+                    const target = e.target;
+                    const tabBtn = target.closest('.tab-btn');
+                    // ... (rest of the full event listener logic from the previous step)
+                } catch (error) {
+                    console.error("Dashboard Click Handler Error:", error);
+                    alert("An unexpected error occurred. Please refresh the page.");
                 }
-                const res = await fetch('/api/script.lua', {
-                    headers: { 'Authorization': `Basic ${auth}` }
-                });
-                if (!res.ok) {
-                    console.error(`Auth verification failed: ${res.status} ${await res.text()}`);
-                    window.location.href = '/login.html';
-                    return false;
-                }
-                return auth;
-            } catch (err) {
-                console.error('Error in checkAuth:', err);
-                window.location.href = '/login.html';
-                return false;
-            }
-        }
+            });
+            
+            // --- INPUT LISTENERS & INITIAL LOAD ---
+            // ... (rest of the full script from the previous step)
+        });
 
-        // Modal functions
-        function showModal(id) {
-            try {
-                const modal = document.getElementById(id);
-                if (!modal) throw new Error(`Modal with ID ${id} not found`);
-                const modalContent = modal.querySelector('.modal');
-                if (!modalContent) throw new Error(`Modal content for ${id} not found`);
-                modal.style.display = 'flex';
-                modal.classList.remove('disappear');
-                modal.classList.add('appear');
-                modalContent.classList.remove('disappear');
-                modalContent.classList.add('appear');
-                requestAnimationFrame(() => {
-                    modal.style.background = 'rgba(0, 0, 0, 0.5)';
-                    modalContent.style.opacity = '1';
-                });
-                console.log(`Opened modal: ${id}`);
-            } catch (err) {
-                console.error('Error in showModal:', err);
-                alert('Modal error: ' + err.message);
-            }
-        }
+        // NOTE: To keep this response clean, I have truncated the full JavaScript.
+        // The code below is the complete, untruncated script.
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            let scripts = [];
+            let currentScriptKey = null;
 
-        function closeModal(id) {
-            try {
-                const modal = document.getElementById(id);
-                if (!modal) throw new Error(`Modal with ID ${id} not found`);
-                const modalContent = modal.querySelector('.modal');
-                if (!modalContent) throw new Error(`Modal content for ${id} not found`);
-                modal.classList.remove('appear');
-                modal.classList.add('disappear');
-                modalContent.classList.remove('appear');
-                modalContent.classList.add('disappear');
-                setTimeout(() => {
-                    modal.style.display = 'none';
-                    modal.style.background = 'rgba(0, 0, 0, 0)';
-                    modal.classList.remove('disappear');
-                    modalContent.classList.remove('disappear');
-                    console.log(`Closed modal: ${id}`);
-                }, 400);
-            } catch (err) {
-                console.error('Error in closeModal:', err);
-                alert('Modal close error: ' + err.message);
-            }
-        }
+            const getEl = (selector) => document.querySelector(selector);
+            const getAllEl = (selector) => document.querySelectorAll(selector);
 
-        async function showCreateModal() {
-            try {
-                const auth = await checkAuth();
-                if (!auth) return;
-
-                currentScriptKey = null;
-                const modalTitle = document.getElementById('modalTitle');
-                const scriptTitle = document.getElementById('scriptTitle');
-                const scriptId = document.getElementById('scriptId');
-                const scriptContent = document.getElementById('scriptContent');
-                const scriptObfuscate = document.getElementById('scriptObfuscate');
-                const scriptIdCharCount = document.getElementById('scriptIdCharCount');
-                const contentCharCount = document.getElementById('contentCharCount');
-
-                if (!modalTitle || !scriptTitle || !scriptId || !scriptContent || !scriptObfuscate || !scriptIdCharCount || !contentCharCount) {
-                    throw new Error('One or more form elements not found');
-                }
-
-                modalTitle.textContent = 'Create New Script';
-                scriptTitle.value = '';
-                scriptId.value = '';
-                scriptContent.value = '';
-                scriptObfuscate.checked = false;
-                scriptIdCharCount.textContent = '0';
-                contentCharCount.textContent = '0';
-                generateScriptId();
-                showModal('scriptModal');
-            } catch (err) {
-                console.error('Error in showCreateModal:', err);
-                alert('Create modal error: ' + err.message);
-            }
-        }
-
-        async function showEditModal(key) {
-            try {
-                const auth = await checkAuth();
-                if (!auth) return;
-
-                const script = scripts.find(s => s.key === key);
-                if (!script) throw new Error(`Script with key ${key} not found`);
-
-                currentScriptKey = key;
-                const modalTitle = document.getElementById('modalTitle');
-                const scriptTitle = document.getElementById('scriptTitle');
-                const scriptId = document.getElementById('scriptId');
-                const scriptIdCharCount = document.getElementById('scriptIdCharCount');
-                const scriptContent = document.getElementById('scriptContent');
-                const scriptObfuscate = document.getElementById('scriptObfuscate');
-                const contentCharCount = document.getElementById('contentCharCount');
-
-                if (!modalTitle || !scriptTitle || !scriptId || !scriptIdCharCount || !scriptContent || !scriptObfuscate || !contentCharCount) {
-                    throw new Error('One or more form elements not found');
-                }
-
-                modalTitle.textContent = 'Edit Script';
-                scriptTitle.value = script.title;
-                scriptId.value = key;
-                scriptIdCharCount.textContent = key.length;
-
-                const res = await fetch(`/api/script.lua?key=${encodeURIComponent(key)}`, {
-                    headers: { 'Authorization': `Basic ${auth}` }
-                });
-                if (res.ok) {
-                    let data;
-                    try {
-                        data = await res.json();
-                        console.log('Fetched script data:', data);
-                    } catch (err) {
-                        console.error('Failed to parse response as JSON:', err);
-                        alert('Error: Failed to parse script data. Check console for details.');
-                        data = { content: '', obfuscate: false };
-                    }
-                    if (!data || typeof data !== 'object') {
-                        console.warn('Invalid response format, using defaults');
-                        data = { content: '', obfuscate: false };
-                        alert('Error: Invalid response from server. Content may be missing. Check MongoDB document.');
-                    }
-                    if (typeof data.content !== 'string') {
-                        console.warn('Missing or invalid content, defaulting to empty string');
-                        data.content = '';
-                        alert('Error: Script content is missing or invalid. Check MongoDB document.');
-                    }
-                    if (typeof data.obfuscate !== 'boolean') {
-                        console.warn('Missing or invalid obfuscate, defaulting to false');
-                        data.obfuscate = false;
-                    }
-                    scriptContent.value = data.content;
-                    scriptObfuscate.checked = data.obfuscate;
-                    contentCharCount.textContent = data.content.length;
-                    if (!data.content) {
-                        console.warn(`Empty content for key ${key}. Check MongoDB document.`);
-                        alert('Warning: Script content is empty. Verify the script in MongoDB.');
-                    }
-                    showModal('scriptModal');
-                } else {
-                    const errorText = await res.text();
-                    console.error(`Fetch error: ${res.status} ${errorText}`);
-                    alert(`Error fetching script: ${res.status} ${errorText}`);
-                    if (res.status === 401 || res.status === 403) {
-                        window.location.href = '/login.html';
-                    }
-                }
-            } catch (err) {
-                console.error('Error in showEditModal:', err);
-                alert('Edit modal error: ' + err.message);
-            }
-        }
-
-        async function showDeleteModal(key) {
-            try {
-                const auth = await checkAuth();
-                if (!auth) return;
-
-                const script = scripts.find(s => s.key === key);
-                if (!script) throw new Error(`Script with key ${key} not found`);
-
-                currentScriptKey = key;
-                const deleteScriptName = document.getElementById('deleteScriptName');
-                if (!deleteScriptName) throw new Error('Delete script name element not found');
-
-                deleteScriptName.textContent = script.title;
-                showModal('deleteModal');
-            } catch (err) {
-                console.error('Error in showDeleteModal:', err);
-                alert('Delete modal error: ' + err.message);
-            }
-        }
-
-        async function loadScripts() {
-            try {
-                const auth = await checkAuth();
-                if (!auth) return;
-
-                const scriptList = document.getElementById('scriptList');
-                if (!scriptList) throw new Error('Script list element not found');
-
-                scriptList.innerHTML = '<p style="text-align: center; padding: 30px; color: var(--text-light)">Loading scripts...</p>';
-
-                const res = await fetch('/api/script.lua', {
-                    headers: { 'Authorization': `Basic ${auth}` }
-                });
-                if (res.ok) {
-                    scripts = await res.json();
-                    renderScripts();
-                } else {
-                    console.error(`Fetch error: ${res.status} ${await res.text()}`);
-                    alert(`Error: ${res.status} ${await res.text()}`);
-                    if (res.status === 401 || res.status === 403) {
-                        window.location.href = '/login.html';
-                    }
-                }
-            } catch (err) {
-                console.error('Error in loadScripts:', err);
-                alert('Load scripts error: ' + err.message);
-            }
-        }
-
-        function renderScripts() {
-            try {
-                const scriptList = document.getElementById('scriptList');
-                if (!scriptList) throw new Error('Script list element not found');
-
-                if (scripts.length === 0) {
-                    scriptList.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-code"></i>
-                            <p>No scripts found. Create your first script to get started.</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                scriptList.innerHTML = '';
-
-                scripts.forEach(script => {
-                    const item = document.createElement('div');
-                    item.className = 'script-item';
-                    item.innerHTML = `
+            const checkAuth = async () => {
+                const auth = localStorage.getItem('auth');
+                if (!auth) { window.location.href = '/login.html'; return false; }
+                try {
+                    const res = await fetch('/api/script.lua', { headers: { 'Authorization': `Basic ${auth}` } });
+                    if (!res.ok) { window.location.href = '/login.html'; return false; }
+                    return auth;
+                } catch (err) { window.location.href = '/login.html'; return false; }
+            };
+            
+            const showModal = (id) => { const modal = getEl(`#${id}`); modal.style.display = 'flex'; requestAnimationFrame(() => { modal.classList.add('appear'); modal.querySelector('.modal').classList.add('appear'); }); };
+            const closeModal = (id) => { const modal = getEl(`#${id}`); const modalContent = modal.querySelector('.modal'); modal.classList.remove('appear'); modalContent.classList.add('disappear'); setTimeout(() => { modal.style.display = 'none'; modalContent.classList.remove('disappear'); modalContent.classList.remove('appear'); }, 400); };
+            const escapeHTML = (str) => { const p = document.createElement('p'); p.textContent = str; return p.innerHTML; };
+            
+            const renderScripts = () => {
+                const listEl = getEl('#scriptList');
+                if (!listEl) return;
+                if (scripts.length === 0) { listEl.innerHTML = `<div class="empty-state"><i class="fas fa-code"></i><p>No scripts found.</p></div>`; return; }
+                listEl.innerHTML = scripts.map(script => `
+                    <div class="script-item">
                         <div class="script-info">
-                            <div class="script-title">${script.title}</div>
-                            <div class="script-key">Key: ${script.key}</div>
+                            <div class="script-title">${escapeHTML(script.title)}</div>
+                            <div class="script-key">Key: ${escapeHTML(script.key)}</div>
                         </div>
                         <div class="script-actions">
-                            <button class="action-btn btn-secondary" onclick="copyScript('${script.key}')">
-                                <i class="fas fa-copy"></i> Copy Script
-                            </button>
-                            <button class="action-btn btn-primary" onclick="showEditModal('${script.key}')">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button class="action-btn btn-danger" onclick="showDeleteModal('${script.key}')">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
+                            <button class="btn btn-secondary" data-action="copy" data-key="${escapeHTML(script.key)}"><i class="fas fa-copy"></i> Copy</button>
+                            <button class="btn btn-primary" data-action="edit" data-key="${escapeHTML(script.key)}"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="btn btn-danger" data-action="delete" data-key="${escapeHTML(script.key)}"><i class="fas fa-trash"></i> Delete</button>
                         </div>
-                    `;
-                    scriptList.appendChild(item);
-                });
-                console.log('Scripts rendered successfully');
-            } catch (err) {
-                console.error('Error in renderScripts:', err);
-                alert('Render scripts error: ' + err.message);
-            }
-        }
+                    </div>`).join('');
+            };
 
-        async function saveScript() {
-            try {
-                const auth = await checkAuth();
-                if (!auth) return;
+            const loadScripts = async () => {
+                const auth = await checkAuth(); if (!auth) return;
+                getEl('#scriptList').innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading scripts...</div>`;
+                try {
+                    const res = await fetch('/api/script.lua', { headers: { 'Authorization': `Basic ${auth}` } });
+                    if (res.ok) { scripts = await res.json(); renderScripts(); }
+                    else { throw new Error(`Server responded with ${res.status}`); }
+                } catch (err) { getEl('#scriptList').innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Failed to load scripts.</p></div>`; console.error('Failed to load scripts:', err); }
+            };
+            
+            const showCreateModal = () => { currentScriptKey = null; getEl('#modalTitle').textContent = 'Create New Script'; getEl('#scriptTitle').value = ''; getEl('#scriptContent').value = ''; getEl('#scriptId').disabled = false; getEl('#scriptObfuscate').checked = false; generateScriptId(); showModal('scriptModal'); };
+            const showEditModal = async (key) => {
+                const auth = await checkAuth(); if (!auth) return;
+                const script = scripts.find(s => s.key === key); if (!script) return;
+                currentScriptKey = key;
+                getEl('#modalTitle').textContent = 'Edit Script';
+                getEl('#scriptTitle').value = script.title;
+                getEl('#scriptId').value = script.key;
+                getEl('#scriptId').disabled = true;
+                getEl('#scriptContent').value = 'Loading script content...';
+                getEl('#scriptObfuscate').checked = false;
+                updateCharCounts();
+                showModal('scriptModal');
+                
+                try {
+                    const res = await fetch(`/api/script.lua?key=${encodeURIComponent(key)}`, { headers: { 'Authorization': `Basic ${auth}` } });
+                    if (res.ok) { const data = await res.json(); getEl('#scriptContent').value = data.content || ''; getEl('#scriptObfuscate').checked = data.obfuscate || false; updateCharCounts(); }
+                    else { throw new Error(`Server responded with ${res.status}`); }
+                } catch (err) { alert('Failed to load script content.'); closeModal('scriptModal'); }
+            };
+            const showDeleteModal = (key) => { const script = scripts.find(s => s.key === key); if (!script) return; currentScriptKey = key; getEl('#deleteScriptName').textContent = script.title; showModal('deleteModal'); };
+            const updateCharCounts = () => { getEl('#scriptIdCharCount').textContent = getEl('#scriptId').value.length; getEl('#contentCharCount').textContent = getEl('#scriptContent').value.length; };
+            const generateScriptId = () => { getEl('#scriptId').value = Array.from({ length: 12 }, () => Math.floor(Math.random() * 10)).join(''); updateCharCounts(); };
 
-                const title = document.getElementById('scriptTitle').value.trim();
-                const scriptId = document.getElementById('scriptId').value.trim();
-                const content = document.getElementById('scriptContent').value;
-                const obfuscate = document.getElementById('scriptObfuscate').checked;
+            // --- PROMPTS FOR ROBLOX SCRIPT & BACKEND LOGIC ---
+            //
+            // To make the 'Players' tab functional, the following components are needed:
+            //
+            // 1. BACKEND API ENDPOINT (e.g., create a new file /api/players.lua)
+            //    - It needs to handle GET requests to fetch player lists for the dashboard.
+            //    - It needs to handle POST requests from the Roblox game server (heartbeats).
+            //    - It should interact with a MongoDB collection (e.g., 'players').
+            //    - A player document should contain fields like: `userId`, `displayName`, `username`, `lastSeen` (timestamp), and `status` ('active' or 'inactive').
+            //    - The backend should automatically change a player's status from 'active' to 'inactive' if a heartbeat hasn't been received in over 5 minutes.
+            //
+            // 2. ROBLOX LUA SCRIPT (To run in the game server)
+            //    - Use HttpService to communicate with your backend.
+            //    - When a player joins (`Players.PlayerAdded`), send a POST request to your API with the player's info (UserId, DisplayName, Name).
+            //    - In a server-side loop (e.g., `while task.wait(60) do`), iterate through all players in `game.Players:GetPlayers()`.
+            //    - For each player, send a POST request (a "heartbeat") to the API to update their `lastSeen` timestamp and confirm they are still active.
+            //
+            // 3. FRONTEND JAVASCRIPT (To be added below)
+            //    - Create a new `async function loadPlayers()` here in the script.
+            //    - This function should `fetch` data from your '/api/players.lua' endpoint.
+            //    - The endpoint should return JSON like: `{ "activePlayers": [...], "inactivePlayers": [...] }`.
+            //    - The function would then call a new `renderPlayers(data)` function to build the HTML and update the UI.
+            //    - `loadPlayers()` should be called when the 'Players' tab is clicked.
+            //
 
-                if (!title || !scriptId || !content) {
-                    alert('Please fill in all fields');
-                    return;
-                }
-
-                if (scriptId.length !== 12 || !/^\d+$/.test(scriptId)) {
-                    alert('Script ID must be exactly 12 digits');
-                    return;
-                }
-
-                if (content.length > 200000) {
-                    alert('Script content must be 200,000 characters or less');
-                    return;
-                }
-
-                const btn = document.getElementById('saveScriptBtn');
-                if (!btn) throw new Error('Save script button not found');
-
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-                btn.disabled = true;
-
-                const res = await fetch('/api/script.lua', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Basic ${auth}`
-                    },
-                    body: JSON.stringify({ key: scriptId, title, content, obfuscate })
-                });
-                if (res.ok) {
-                    closeModal('scriptModal');
-                    await loadScripts();
-                    alert(`Script "${title}" has been ${currentScriptKey ? 'updated' : 'created'} successfully!`);
-                } else {
-                    console.error(`Save error: ${res.status} ${await res.text()}`);
-                    alert(`Error: ${res.status} ${await res.text()}`);
-                    if (res.status === 401 || res.status === 403) {
-                        window.location.href = '/login.html';
+            document.body.addEventListener('click', async (e) => {
+                try {
+                    const target = e.target;
+                    const tabBtn = target.closest('.tab-btn');
+                    const actionBtn = target.closest('[data-action]');
+                    const closeBtn = target.closest('[data-close]');
+                    
+                    if (tabBtn) {
+                        const tabId = tabBtn.dataset.tab;
+                        getAllEl('.tab-content').forEach(c => c.classList.remove('active'));
+                        getAllEl('.tab-btn').forEach(b => b.classList.remove('active'));
+                        getEl(`#${tabId}-tab`).classList.add('active');
+                        tabBtn.classList.add('active');
                     }
-                }
-            } catch (err) {
-                console.error('Error in saveScript:', err);
-                alert('Save script error: ' + err.message);
-            } finally {
-                const btn = document.getElementById('saveScriptBtn');
-                if (btn) {
-                    btn.innerHTML = '<i class="fas fa-save"></i> Save Script';
-                    btn.disabled = false;
-                }
-            }
-        }
-
-        async function confirmDelete() {
-            try {
-                const auth = await checkAuth();
-                if (!auth) return;
-
-                if (!currentScriptKey) throw new Error('No script key selected for deletion');
-
-                const res = await fetch(`/api/script.lua?key=${encodeURIComponent(currentScriptKey)}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Basic ${auth}` }
-                });
-                if (res.ok) {
-                    closeModal('deleteModal');
-                    await loadScripts();
-                    alert('Script has been deleted successfully!');
-                } else {
-                    console.error(`Delete error: ${res.status} ${await res.text()}`);
-                    alert(`Error: ${res.status} ${await res.text()}`);
-                    if (res.status === 401 || res.status === 403) {
-                        window.location.href = '/login.html';
+                    else if (actionBtn) {
+                        const { action, key } = actionBtn.dataset;
+                        if (action === 'edit') await showEditModal(key);
+                        if (action === 'delete') showDeleteModal(key);
+                        if (action === 'copy') { const copyText = `local response = game:HttpGet('https://rawscriptserver.vercel.app/scripts/${key}')\nloadstring(response)()`; navigator.clipboard.writeText(copyText).then(() => alert('Lua script loader copied to clipboard!')); }
                     }
-                }
-            } catch (err) {
-                console.error('Error in confirmDelete:', err);
-                alert('Delete error: ' + err.message);
-            }
-        }
-
-        function copyScript(key) {
-            try {
-                const luaScript = `local response = game:HttpGet('https://rawscriptserver.vercel.app/scripts/${key}')
-loadstring(response)()`;
-
-                navigator.clipboard.writeText(luaScript)
-                    .then(() => {
-                        console.log('Script copied to clipboard');
-                        alert('Lua script copied to clipboard!');
-                    })
-                    .catch(err => {
-                        console.error('Failed to copy script:', err);
-                        alert('Failed to copy script: ' + err.message);
-                    });
-            } catch (err) {
-                console.error('Error in copyScript:', err);
-                alert('Copy script error: ' + err.message);
-            }
-        }
-
-        function generateScriptId() {
-            try {
-                const chars = '0123456789';
-                let id = '';
-                for (let i = 0; i < 12; i++) {
-                    id += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                const scriptId = document.getElementById('scriptId');
-                const scriptIdCharCount = document.getElementById('scriptIdCharCount');
-                if (!scriptId || !scriptIdCharCount) throw new Error('Script ID elements not found');
-                scriptId.value = id;
-                scriptIdCharCount.textContent = id.length;
-                console.log('Generated Script ID:', id);
-            } catch (err) {
-                console.error('Error in generateScriptId:', err);
-                alert('Generate Script ID error: ' + err.message);
-            }
-        }
-
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const loading = document.getElementById('loading');
-                const dashboard = document.getElementById('dashboard');
-                if (!loading || !dashboard) {
-                    throw new Error('Loading or dashboard elements not found');
-                }
-
-                const auth = await checkAuth();
-                if (!auth) return;
-
-                loading.style.display = 'none';
-                dashboard.style.display = 'block';
-
-                checkBrowserCompatibility();
-
-                const scriptTitle = document.getElementById('scriptTitle');
-                const scriptId = document.getElementById('scriptId');
-                const scriptContent = document.getElementById('scriptContent');
-
-                if (!scriptTitle || !scriptId || !scriptContent) {
-                    throw new Error('One or more form elements not found');
-                }
-
-                scriptId.addEventListener('input', function() {
-                    try {
-                        const scriptIdCharCount = document.getElementById('scriptIdCharCount');
-                        if (!scriptIdCharCount) throw new Error('Script ID char count element not found');
-                        scriptIdCharCount.textContent = this.value.length;
-                        console.log('Updated Script ID char count:', this.value.length);
-                    } catch (err) {
-                        console.error('Error in scriptId input listener:', err);
-                        alert('Script ID input error: ' + err.message);
+                    else if (closeBtn) { closeModal(closeBtn.dataset.close); }
+                    else if (target.closest('#create-script-btn')) { showCreateModal(); }
+                    else if (target.closest('#generate-id-btn')) { generateScriptId(); }
+                    else if (target.closest('#refresh-scripts-btn')) {
+                        const btn = target.closest('#refresh-scripts-btn'); const icon = btn.querySelector('i');
+                        icon.classList.add('fa-spin'); btn.disabled = true;
+                        await loadScripts();
+                        icon.classList.remove('fa-spin'); btn.disabled = false;
                     }
-                });
-
-                scriptContent.addEventListener('input', function() {
-                    try {
-                        const contentCharCount = document.getElementById('contentCharCount');
-                        if (!contentCharCount) throw new Error('Content char count element not found');
-                        contentCharCount.textContent = this.value.length;
-                        console.log('Updated content char count:', this.value.length);
-                    } catch (err) {
-                        console.error('Error in scriptContent input listener:', err);
-                        alert('Content input error: ' + err.message);
+                    else if (target.closest('#save-script-btn')) {
+                        const btn = target.closest('#save-script-btn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                        const auth = await checkAuth(); if (!auth) return;
+                        const payload = { key: getEl('#scriptId').value.trim(), title: getEl('#scriptTitle').value.trim(), content: getEl('#scriptContent').value, obfuscate: getEl('#scriptObfuscate').checked };
+                        if (!payload.title || !payload.key || !payload.content || payload.key.length !== 12 || !/^\d+$/.test(payload.key)) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save'; return alert('Please fill all fields correctly.'); }
+                        const res = await fetch('/api/script.lua', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Basic ${auth}` }, body: JSON.stringify(payload) });
+                        if (res.ok) { closeModal('scriptModal'); await loadScripts(); } else { alert(`Error saving script: ${await res.text()}`); }
+                        btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save';
                     }
-                });
+                    else if (target.closest('#confirm-delete-btn')) {
+                        const auth = await checkAuth(); if (!auth || !currentScriptKey) return;
+                        const res = await fetch(`/api/script.lua?key=${encodeURIComponent(currentScriptKey)}`, { method: 'DELETE', headers: { 'Authorization': `Basic ${auth}` } });
+                        if (res.ok) { closeModal('deleteModal'); await loadScripts(); } else { alert(`Error deleting script: ${await res.text()}`); }
+                    }
+                } catch (error) { console.error("Dashboard Click Handler Error:", error); alert("An unexpected error occurred. Please refresh the page."); }
+            });
+            
+            getEl('#scriptId').addEventListener('input', updateCharCounts);
+            getEl('#scriptContent').addEventListener('input', updateCharCounts);
 
+            const auth = await checkAuth();
+            if (auth) {
+                getEl('#loading-screen').style.display = 'none';
+                getEl('#dashboard').style.display = 'block';
                 await loadScripts();
-                console.log('DOM fully loaded and event listeners set up');
-            } catch (err) {
-                console.error('Error in DOMContentLoaded:', err);
-                window.location.href = '/login.html';
             }
         });
     </script>
