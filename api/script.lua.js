@@ -8,13 +8,13 @@ if (!uri) {
 const client = new MongoClient(uri);
 let db;
 
-async function connectToDB(collectionName = 'scripts') {
+async function connectToDB() {
   try {
     if (!db) {
       await client.connect();
       db = client.db('lua-server');
     }
-    return db.collection(collectionName);
+    return db.collection('scripts');
   } catch (err) {
     console.error('MongoDB connection error:', err.message);
     throw new Error(`Failed to connect to database: ${err.message}`);
@@ -23,7 +23,7 @@ async function connectToDB(collectionName = 'scripts') {
 
 async function getScriptByKey(key) {
   try {
-    const collection = await connectToDB('scripts');
+    const collection = await connectToDB();
     const doc = await collection.findOne({ _id: key });
     console.log(`MongoDB query for key ${key}:`, doc);
     if (!doc) {
@@ -45,7 +45,7 @@ async function getScriptByKey(key) {
 
 async function getAllScripts() {
   try {
-    const collection = await connectToDB('scripts');
+    const collection = await connectToDB();
     const scripts = await collection.find({}).toArray();
     return scripts.map(doc => ({
       key: doc._id,
@@ -61,7 +61,7 @@ async function getAllScripts() {
 
 async function saveScript(key, title, content, obfuscate) {
   try {
-    const collection = await connectToDB('scripts');
+    const collection = await connectToDB();
     if (!content.trim()) {
       console.error('Script content cannot be empty');
       throw new Error('Script content cannot be empty');
@@ -80,7 +80,7 @@ async function saveScript(key, title, content, obfuscate) {
 
 async function deleteScript(key) {
   try {
-    const collection = await connectToDB('scripts');
+    const collection = await connectToDB();
     const result = await collection.deleteOne({ _id: key });
     if (result.deletedCount === 0) {
       throw new Error('Script not found');
@@ -92,66 +92,6 @@ async function deleteScript(key) {
   }
 }
 
-async function pingPlayer({ username, displayName, avatar }) {
-  try {
-    const collection = await connectToDB('players');
-    const now = new Date();
-    const existingPlayer = await collection.findOne({ username });
-    
-    if (existingPlayer) {
-      await collection.updateOne(
-        { username },
-        { $set: { lastSeen: now, displayName, avatar } }
-      );
-      console.log(`Updated player ping: ${username}`);
-    } else {
-      await collection.insertOne({
-        username,
-        displayName,
-        avatar,
-        firstSeen: now,
-        lastSeen: now
-      });
-      console.log(`Added new player: ${username}`);
-    }
-    return { message: 'Ping recorded' };
-  } catch (err) {
-    console.error('MongoDB player ping error:', err.message);
-    throw new Error(`Failed to record ping: ${err.message}`);
-  }
-}
-
-async function getPlayers() {
-  try {
-    const collection = await connectToDB('players');
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-    const players = await collection.find({}).toArray();
-    
-    const activePlayers = players.filter(p => p.lastSeen >= fiveMinutesAgo);
-    const previousPlayers = players.filter(p => p.lastSeen < fiveMinutesAgo);
-    
-    return {
-      activePlayers: activePlayers.map(p => ({
-        username: p.username,
-        displayName: p.displayName,
-        avatar: p.avatar,
-        firstSeen: p.firstSeen,
-        lastSeen: p.lastSeen
-      })),
-      previousPlayers: previousPlayers.map(p => ({
-        username: p.username,
-        displayName: p.displayName,
-        avatar: p.avatar,
-        firstSeen: p.firstSeen,
-        lastSeen: p.lastSeen
-      }))
-    };
-  } catch (err) {
-    console.error('MongoDB get players error:', err.message);
-    throw new Error(`Failed to fetch players: ${err.message}`);
-  }
-}
-
 function simpleObfuscate(code) {
   return code.replace(/--.*$/gm, '').replace(/\s+/g, ' ').trim();
 }
@@ -159,28 +99,11 @@ function simpleObfuscate(code) {
 export default async function handler(req, res) {
   const authHeader = req.headers.authorization;
   const expectedAuth = `Basic ${Buffer.from(`${process.env.ADMIN_USERNAME}:${process.env.ADMIN_PASSWORD}`).toString('base64')}`;
-  const scriptId = req.params?.scriptid || req.query?.scriptid;
+  const scriptId = req.params?.scriptid || req.query?.scriptid; // Check both params and query
 
-  console.log(`Received request: ${req.method} ${req.url}`);
+  console.log(`Received request: ${req.method} /api/script.lua/${scriptId || ''}`);
 
   try {
-    if (req.method === 'POST' && req.url === '/api/player-ping') {
-      const { username, displayName, avatar } = req.body;
-      if (!username || !displayName || !avatar) {
-        console.log('Blocked - missing required player fields');
-        return res.status(400).json({ error: 'Missing required fields' });
-      }
-      await pingPlayer({ username, displayName, avatar });
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      return res.status(200).json({ message: 'Ping recorded' });
-    }
-
-    if (req.method === 'GET' && req.url === '/api/players' && authHeader === expectedAuth) {
-      const players = await getPlayers();
-      console.log('Fetched all players');
-      return res.status(200).json(players);
-    }
-
     if (req.method === 'GET' && scriptId) {
       console.log(`Handling GET /api/script.lua/${scriptId}`);
       const { content, obfuscate } = await getScriptByKey(scriptId);
@@ -191,7 +114,7 @@ export default async function handler(req, res) {
       }
       const output = obfuscate ? simpleObfuscate(content) : content;
       res.setHeader('Content-Type', 'text/plain');
-      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Origin', '*'); // Allow access from any app
       console.log(`Served raw script: ${scriptId} (obfuscated: ${obfuscate})`);
       return res.status(200).send(output);
     }
